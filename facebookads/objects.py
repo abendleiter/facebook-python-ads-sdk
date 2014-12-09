@@ -23,6 +23,10 @@ objects module contains classes that represent and help traverse nodes on the
 Ads API.
 """
 
+import hashlib
+import collections
+import json
+
 from facebookads.exceptions import FacebookBadObjectError
 from facebookads.api import FacebookAdsApi
 from facebookads.mixins import (
@@ -34,10 +38,6 @@ from facebookads.mixins import (
     HasStatus,
     HasBidInfo,
 )
-
-import hashlib
-import collections
-import json
 
 
 class EdgeIterator(object):
@@ -1926,3 +1926,55 @@ class AutoComplete(AbstractCrudObject):
             self.get_parent_id_assured(),
             self.get_endpoint()
         )
+
+
+class Page(AbstractCrudObject):
+
+    class Field(object):
+        access_status = 'access_status'
+        access_type = 'access_type'
+        category = 'category'
+        category_list = 'category_list'
+        id = 'id'
+        name = 'name'
+        permitted_roles = 'permitted_roles'
+
+
+        class PermittedRoles(object):
+            advertiser = 'ADVERTISER'
+            content_creator = 'CONTENT_CREATOR'
+            insights_analyst = 'INSIGHTS_ANALYST'
+            manager = 'MANAGER'
+            moderator = 'MODERATOR'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'pages'
+
+
+class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
+
+    class Field(object):
+        id = 'id'
+        name = 'name'
+        native_app_store_ids = 'native_app_store_ids'
+        native_app_targeting_ids = 'native_app_targeting_ids'
+        og_actions = 'og_actions'
+        og_namespace = 'og_namespace'
+        og_objects = 'og_objects'
+        picture = 'picture'
+        supported_platforms = 'supported_platforms'
+        tabs = 'tabs'
+        type = 'type'
+        url = 'url'
+
+    @classmethod
+    def get_endpoint(cls):
+        return ''
+
+    @classmethod
+    def get_default_read_fields(cls):
+        return [cls.Field.id, cls.Field.name]
+
+    def get_pages(self, fields=None, params=None):
+        return self.iterate_edge(Page, fields, params)
