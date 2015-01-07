@@ -130,7 +130,7 @@ class FacebookAdsApi(object):
             this sdk.
     """
 
-    SDK_VERSION = '2.2.2'
+    SDK_VERSION = '2.2.3'
 
     API_VERSION = 'v2.2'
 
@@ -245,7 +245,7 @@ class FacebookAdsApi(object):
             path = "%s/%s/%s" % (
                 self._session.GRAPH,
                 self.API_VERSION,
-                '/'.join(path),
+                '/'.join(map(str, path)),
             )
 
         # Include api headers in http request

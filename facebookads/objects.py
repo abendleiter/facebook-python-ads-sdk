@@ -39,6 +39,10 @@ from facebookads.mixins import (
     HasBidInfo,
 )
 
+import hashlib
+import collections
+import json
+import six
 
 class EdgeIterator(object):
 
@@ -249,14 +253,11 @@ class AbstractObject(collections.MutableMapping):
         if isinstance(data, AbstractObject):
             data = data.export_data()
         elif isinstance(data, dict):
-            for key, value in data.items():
-                if value is None:
-                    del data[key]
-                else:
-                    data[key] = self.export_value(value)
+            data = dict((k, self.export_value(v))
+                        for k, v in data.items()
+                        if v is not None)
         elif isinstance(data, list):
-            for i, value in enumerate(data):
-                data[i] = self.export_value(value)
+            data = [self.export_value(v) for v in data]
         return data
 
     def export_data(self):
@@ -289,13 +290,9 @@ class AbstractCrudObject(AbstractObject):
         super(AbstractCrudObject, self).__init__()
 
         self._changes = {}
-
-        if fbid is not None:
-            self[self.Field.id] = str(fbid)
-
-        if parent_id is not None:
-            self.parent_id = str(parent_id)
-        self.api = api
+        self[self.Field.id] = fbid
+        self._parent_id = parent_id
+        self._api = api
 
     def __setitem__(self, key, value):
         """Sets an item in this CRUD object while maintaining a changelog."""
@@ -360,15 +357,15 @@ class AbstractCrudObject(AbstractObject):
 
     def get_parent_id(self):
         """Returns the object's parent's id."""
-        return self.parent_id or FacebookAdsApi.get_default_account_id()
+        return self._parent_id or FacebookAdsApi.get_default_account_id()
 
     def get_api(self):
         """
         Returns the api associated with the object. If None, returns the default
         api.
         """
-        if self.api is not None:
-            return self.api
+        if self._api is not None:
+            return self._api
         else:
             return FacebookAdsApi.get_default_api()
 
@@ -387,7 +384,7 @@ class AbstractCrudObject(AbstractObject):
                 % self.__class__.__name__
             )
 
-        return self[self.Field.id]
+        return self.get_id()
 
     def get_parent_id_assured(self):
         """Returns the object's parent's fbid.
@@ -401,7 +398,7 @@ class AbstractCrudObject(AbstractObject):
                 % self.__class__.__name__
             )
 
-        return self.parent_id
+        return self.get_parent_id()
 
     def get_api_assured(self):
         """Returns the fbid of the object.
@@ -500,7 +497,7 @@ class AbstractCrudObject(AbstractObject):
             self if not a batch call.
             the return value of batch.add if a batch call.
         """
-        if self.Field.id in self:
+        if self.get_id() is not None:
             raise FacebookBadObjectError(
                 "This %s object was already created." % self.__class__.__name__
             )
@@ -537,6 +534,7 @@ class AbstractCrudObject(AbstractObject):
                 files=files,
             )
             self._set_data(response.json())
+            self._clear_history()
 
             return self
 
@@ -570,7 +568,7 @@ class AbstractCrudObject(AbstractObject):
         """
         params = {} if params is None else params.copy()
         if not fields:
-            params['fields'] = self.get_default_read_fields()
+            params['fields'] = self.get_default_read_fields() or None
         else:
             params['fields'] = ','.join(fields)
 
@@ -1295,6 +1293,7 @@ class AdCreative(AbstractCrudObject):
         object_type = 'object_type'
         object_url = 'object_url'
         preview_url = 'preview_url'
+        thumbnail_url = 'thumbnail_url'
         title = 'title'
         url_tags = 'url_tags'
         video_id = 'video_id'
@@ -1531,6 +1530,8 @@ class CustomAudience(AbstractCrudObject):
             for user in users:
                 if schema == cls.Schema.email_hash:
                     user = user.strip(" \t\r\n\0\x0B.").lower()
+                if isinstance(user, six.text_type):
+                    user = user.encode('utf8')  # required for hashlib
                 hashed_users.append(hashlib.sha256(user).hexdigest())
 
         payload = {
@@ -1774,7 +1775,7 @@ class ReachFrequencyPrediction(AbstractCrudObject):
             self.Field.action: self.Action.reserve,
         }
         # Filter out None values.
-        params = {k: v for (k, v) in params.items() if v is not None}
+        params = dict((k, v) for k, v in params.items() if v is not None)
 
         response = self.get_api_assured().call(
             FacebookAdsApi.HTTP_METHOD_POST,
@@ -1923,8 +1924,7 @@ class AutoComplete(AbstractCrudObject):
 
     def get_node_path(self):
         return (
-            self.get_parent_id_assured(),
-            self.get_endpoint()
+            self.get_endpoint(),
         )
 
 
