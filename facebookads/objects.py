@@ -23,10 +23,6 @@ objects module contains classes that represent and help traverse nodes on the
 Ads API.
 """
 
-import hashlib
-import collections
-import json
-
 from facebookads.exceptions import FacebookBadObjectError
 from facebookads.api import FacebookAdsApi
 from facebookads.mixins import (
