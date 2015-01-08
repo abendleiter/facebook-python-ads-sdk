@@ -1947,6 +1947,9 @@ class Page(AbstractCrudObject):
     def get_endpoint(cls):
         return 'pages'
 
+    def get_node_path(self):
+        return (self.get_parent_id_assured(), self.get_endpoint())
+
 
 class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
 
