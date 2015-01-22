@@ -1951,6 +1951,26 @@ class Page(AbstractCrudObject):
         return (self.get_parent_id_assured(), self.get_endpoint())
 
 
+class Event(AbstractCrudObject):
+    class Field(object):
+        id = 'id'
+        name = 'name'
+        description = 'description'
+        is_date_only = 'is_date_only'
+        owner = 'owner'
+        start_time = 'start_time'
+        updated_time = 'updated_time'
+        attending_count = 'attending_count'
+        declined_count = 'declined_count'
+        invited_count = 'invited_count'
+        maybe_count = 'maybe_count'
+        noreply_count = 'noreply_count'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'event'
+
+
 class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
 
     class Field(object):
