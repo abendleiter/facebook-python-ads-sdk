@@ -1950,6 +1950,9 @@ class Page(AbstractCrudObject):
     def get_node_path(self):
         return (self.get_parent_id_assured(), self.get_endpoint())
 
+    def get_events(self, fields=None, params=None):
+        return self.iterate_edge(PageEvents, fields, params)
+
 
 class Event(AbstractCrudObject):
     class Field(object):
@@ -1969,6 +1972,12 @@ class Event(AbstractCrudObject):
     @classmethod
     def get_endpoint(cls):
         return 'event'
+
+
+class PageEvents(Event):
+    @classmethod
+    def get_endpoint(cls):
+        return 'events'
 
 
 class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
