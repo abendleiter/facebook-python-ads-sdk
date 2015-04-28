@@ -45,36 +45,74 @@ class FacebookAdsTestCase(unittest.TestCase):
     TEST_ACCOUNT = None
     TEST_ID = str(int(time.time()) % 1000)
     TEST_IMAGE_PATH = os.path.join(os.path.dirname(__file__), 'test.png')
+    TEST_ZIP_PATH = os.path.join(os.path.dirname(__file__), 'test.zip')
 
-    @classmethod
-    def new_test_ad_creative(cls):
+    def setUp(self):
+        super(FacebookAdsTestCase, self).setUp()
+        self.remote_objects = []
+
+    def tearDown(self):
+        self.delete_remote_objects()
+        super(FacebookAdsTestCase, self).tearDown()
+
+    def delete_remote_objects(self):
+        """
+        Delete accumulated remote objects.
+        """
+        for o in reversed(self.remote_objects):
+            if o.Field.id in o and o.get_id() is not None:
+                try:
+                    o.remote_delete()
+                except Exception:
+                    if isinstance(o, objects.AdImage):
+                        # AdImages are often reused automatically since the
+                        # hash is unique. They can't be deleted until all the
+                        # references are cleaned up.
+                        pass
+                    else:
+                        # Error out the test if an object can't be deleted,
+                        # since this probably indicates a coding issue in the
+                        # tests.
+                        raise
+
+    def delete_in_teardown(self, obj):
+        """
+        Prepare to delete obj in tearDown.
+        """
+        self.remote_objects.append(obj)
+
+    def new_test_ad_creative(self):
         creative = objects.AdCreative(
-            parent_id=cls.TEST_ACCOUNT.get_id_assured()
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
         )
+        self.delete_in_teardown(creative)
         creative.update({
-            objects.AdCreative.Field.name: 'AdCreativeTestCase %s' % cls.TEST_ID
+            objects.AdCreative.Field.name: ('AdCreativeTestCase %s' %
+                                            self.TEST_ID),
         })
 
         return creative
 
-    @classmethod
-    def new_test_ad_campaign(cls):
+    def new_test_ad_campaign(self):
         campaign = objects.AdCampaign(
-            parent_id=cls.TEST_ACCOUNT.get_id_assured()
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
         )
+        self.delete_in_teardown(campaign)
         campaign.update({
-            objects.AdCampaign.Field.name: 'AdSetTestCase %s' % cls.TEST_ID
+            objects.AdCampaign.Field.name: 'AdSetTestCase %s' % self.TEST_ID,
         })
 
         return campaign
 
-    @classmethod
-    def new_test_ad_set(cls, campaign):
+    def new_test_ad_set(self, campaign):
         campaign_group_id = campaign.get_id_assured()
 
-        ad_set = objects.AdSet(parent_id=cls.TEST_ACCOUNT.get_id_assured())
+        ad_set = objects.AdSet(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+        self.delete_in_teardown(ad_set)
         ad_set.update({
-            objects.AdSet.Field.name: 'AdSetTestCase %s' % cls.TEST_ID,
+            objects.AdSet.Field.name: 'AdSetTestCase %s' % self.TEST_ID,
             objects.AdSet.Field.campaign_group_id: campaign_group_id,
             objects.AdSet.Field.status: objects.AdSet.Status.paused,
             objects.AdSet.Field.pacing_type: [
@@ -96,20 +134,23 @@ class FacebookAdsTestCase(unittest.TestCase):
 
         return ad_set
 
-    @classmethod
-    def new_test_ad_group(cls, ad_set):
+    def new_test_ad_group(self, ad_set):
         campaign_id = ad_set.get_id_assured()
 
-        img = objects.AdImage(parent_id=cls.TEST_ACCOUNT.get_id_assured())
-        img[objects.AdImage.Field.filename] = cls.TEST_IMAGE_PATH
+        img = objects.AdImage(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+        self.delete_in_teardown(img)
+        img[objects.AdImage.Field.filename] = self.TEST_IMAGE_PATH
         img.remote_create()
         image_hash = img.get_hash()
 
         creative = objects.AdCreative(
-            parent_id=cls.TEST_ACCOUNT.get_id_assured()
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
         )
+        self.delete_in_teardown(creative)
         creative.update({
-            objects.AdCreative.Field.title: "Test AdCreative %s" % cls.TEST_ID,
+            objects.AdCreative.Field.title: "Test AdCreative %s" % self.TEST_ID,
             objects.AdCreative.Field.body: "Test ad",
             objects.AdCreative.Field.object_url: "https://www.facebook.com/",
             objects.AdCreative.Field.image_hash: image_hash,
@@ -117,9 +158,12 @@ class FacebookAdsTestCase(unittest.TestCase):
         creative.remote_create()
         creative_id = creative.get_id_assured()
 
-        ad_group = objects.AdGroup(parent_id=cls.TEST_ACCOUNT.get_id_assured())
+        ad_group = objects.AdGroup(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+        self.delete_in_teardown(ad_group)
         ad_group.update({
-            objects.AdGroup.Field.name: 'AdGroupTestCase %s' % cls.TEST_ID,
+            objects.AdGroup.Field.name: 'AdGroupTestCase %s' % self.TEST_ID,
             objects.AdGroup.Field.campaign_id: campaign_id,
             objects.AdGroup.Field.creative: {
                 objects.AdGroup.Field.Creative.creative_id: creative_id,
@@ -128,6 +172,15 @@ class FacebookAdsTestCase(unittest.TestCase):
         })
 
         return ad_group
+
+    def new_test_ad_image(self):
+        img = objects.AdImage(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+        self.delete_in_teardown(img)
+        img[objects.AdImage.Field.filename] = self.TEST_IMAGE_PATH
+        img.remote_create()
+        return img
 
 
 class AbstractObjectTestCase(FacebookAdsTestCase):
@@ -192,7 +245,11 @@ class AbstractCrudObjectTestCase(AbstractObjectTestCase):
 
         subject.remote_delete()
 
-        assert subject.Field.id not in subject
+        if hasattr(subject.Field, 'status'):
+            subject.remote_read(fields=[subject.Field.status])
+            assert subject[subject.Field.status] == 'DELETED'
+        else:
+            assert subject.Field.id not in subject
 
     @classmethod
     def assert_can_archive(cls, subject):
@@ -203,14 +260,66 @@ class AbstractCrudObjectTestCase(AbstractObjectTestCase):
         subject.remote_read(fields=[subject.Field.status])
         assert subject[subject.Field.status] == 'ARCHIVED'
 
+    @classmethod
+    def assert_can_validate(cls, subject):
+        assert 'execution_options' not in subject
+        cached_data = dict(subject)
+        subject.remote_validate()
+        assert 'execution_options' not in subject
+        assert cached_data == subject._data
+
+    @classmethod
+    def assert_can_save(cls, subject):
+        """
+        Asserts that the id is empty before creation and then updates
+        """
+        assert subject[subject.Field.id] is None
+
+        subject.remote_save()
+
+        assert subject[subject.Field.id] is not None
+
+        subject.remote_save()
+
+        mirror = cls.get_mirror(subject)
+
+        assert subject[subject.Field.id] == mirror[mirror.Field.id]
+
+    def test_can_select_api_version(self):
+        image_file = os.path.join(os.path.dirname(__file__), 'test.png')
+
+        test_image_one = objects.AdImage(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+
+        test_image_one[objects.AdImage.Field.filename] = image_file
+
+        assert test_image_one.remote_create(api_version="v2.3") is not None
+
+        test_image_two = objects.AdImage(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+
+        test_image_two[objects.AdImage.Field.filename] = image_file
+
+        try:
+            test_image_two.remote_create(api_version="v.2.3")
+        except fbexceptions.FacebookBadObjectError as e:
+            assert e is not None
+
 
 class AdUserTestCase(AbstractCrudObjectTestCase):
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
+        super(AdUserTestCase, self).setUp()
+        self.orig_aduser_fields = objects.AdUser.get_default_read_fields()
         objects.AdUser.set_default_read_fields([
             objects.AdUser.Field.name,
         ])
+
+    def tearDown(self):
+        objects.AdUser.set_default_read_fields(self.orig_aduser_fields)
+        super(AdUserTestCase, self).tearDown()
 
     def runTest(self):
         self.subject = objects.AdUser('me')
@@ -230,14 +339,19 @@ class AdUserTestCase(AbstractCrudObjectTestCase):
 
 class AdAccountTestCase(AbstractCrudObjectTestCase):
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
+        super(AdAccountTestCase, self).setUp()
+        self.orig_adaccount_fields = objects.AdAccount.get_default_read_fields()
         objects.AdAccount.set_default_read_fields([
             objects.AdAccount.Field.account_status,
             objects.AdAccount.Field.business_name,
             objects.AdAccount.Field.timezone_name,
             objects.AdAccount.Field.daily_spend_limit,
         ])
+
+    def tearDown(self):
+        objects.AdAccount.set_default_read_fields(self.orig_adaccount_fields)
+        super(AdAccountTestCase, self).tearDown()
 
     def runTest(self):
         self.subject = self.get_mirror(self.TEST_ACCOUNT)
@@ -246,14 +360,22 @@ class AdAccountTestCase(AbstractCrudObjectTestCase):
 
 class AdCampaignTestCase(AbstractCrudObjectTestCase):
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
+        super(AdCampaignTestCase, self).setUp()
+        self.orig_adcampaign_fields = \
+            objects.AdCampaign.get_default_read_fields()
         objects.AdCampaign.set_default_read_fields([
             objects.AdCampaign.Field.name,
         ])
 
+    def tearDown(self):
+        objects.AdCampaign.set_default_read_fields(self.orig_adcampaign_fields)
+        super(AdCampaignTestCase, self).tearDown()
+
     def runTest(self):
         self.subject = self.new_test_ad_campaign()
+
+        self.assert_can_validate(self.subject)
 
         self.assert_can_create(self.subject)
 
@@ -271,6 +393,7 @@ class AdCampaignTestCase(AbstractCrudObjectTestCase):
 
 
 class GetByIDsTestCase(AbstractCrudObjectTestCase):
+
     def runTest(self):
         self.campaign1 = self.new_test_ad_campaign()
         self.campaign1['name'] = "Campaign 1"
@@ -285,22 +408,22 @@ class GetByIDsTestCase(AbstractCrudObjectTestCase):
         )
 
         assert len(campaigns) == 2
-        assert (
-            campaigns[0]['name'] == "Campaign 1" and
-            campaigns[1]['name'] == "Campaign 2"
-        ) or (
-            campaigns[0]['name'] == "Campaign 2" and
-            campaigns[1]['name'] == "Campaign 1"
-        )
-
-        campaigns[0].remote_delete()
-        campaigns[1].remote_delete()
+        assert (sorted(c['name'] for c in campaigns) ==
+                ['Campaign 1', 'Campaign 2'])
 
 
 class DefaultReadFieldsTestCase(AbstractCrudObjectTestCase):
-    def runTest(self):
-        old_default_read_fields = objects.AdCampaign.get_default_read_fields()
 
+    def setUp(self):
+        super(DefaultReadFieldsTestCase, self).setUp()
+        self.orig_adcampaign_fields = \
+            objects.AdCampaign.get_default_read_fields()
+
+    def tearDown(self):
+        objects.AdCampaign.set_default_read_fields(self.orig_adcampaign_fields)
+        super(DefaultReadFieldsTestCase, self).tearDown()
+
+    def runTest(self):
         campaign = self.new_test_ad_campaign()
         campaign.remote_create()
         same_campaign = objects.AdCampaign(campaign.get_id())
@@ -319,12 +442,12 @@ class DefaultReadFieldsTestCase(AbstractCrudObjectTestCase):
         campaigns = objects.AdCampaign.get_by_ids(ids=[campaign.get_id()])
         assert objects.AdCampaign.Field.status in campaigns[0]
 
-        objects.AdCampaign.set_default_read_fields(old_default_read_fields)
 
 class AdSetTestCase(AbstractCrudObjectTestCase):
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
+        super(AdSetTestCase, self).setUp()
+        self.orig_adset_fields = objects.AdSet.get_default_read_fields()
         objects.AdSet.set_default_read_fields([
             objects.AdSet.Field.daily_budget,
             objects.AdSet.Field.created_time,
@@ -333,11 +456,17 @@ class AdSetTestCase(AbstractCrudObjectTestCase):
             objects.AdSet.Field.name,
         ])
 
+    def tearDown(self):
+        objects.AdSet.set_default_read_fields(self.orig_adset_fields)
+        super(AdSetTestCase, self).tearDown()
+
     def runTest(self):
         self.campaign = self.new_test_ad_campaign()
         self.campaign.remote_create()
 
         self.subject = self.new_test_ad_set(self.campaign)
+
+        self.assert_can_validate(self.subject)
 
         self.assert_can_create(self.subject)
 
@@ -351,33 +480,27 @@ class AdSetTestCase(AbstractCrudObjectTestCase):
         self.assert_can_archive(self.subject)
 
         self.assert_can_delete(self.subject)
-        self.campaign.remote_delete()
-
-    def tearDown(self):
-        try:
-            self.subject.remote_delete()
-        except fbexceptions.FacebookBadObjectError:
-            pass
-
-        try:
-            self.campaign.remote_delete()
-        except fbexceptions.FacebookBadObjectError:
-            pass
 
 
 class AdGroupTestCase(AbstractCrudObjectTestCase):
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
+        super(AdGroupTestCase, self).setUp()
+        self.orig_adgroup_fields = objects.AdGroup.get_default_read_fields()
         objects.AdGroup.set_default_read_fields([
             objects.AdGroup.Field.created_time,
             objects.AdGroup.Field.name,
             objects.AdGroup.Field.campaign_id,
         ])
 
+    def tearDown(self):
+        objects.AdGroup.set_default_read_fields(self.orig_adgroup_fields)
+        super(AdGroupTestCase, self).tearDown()
+
     def runTest(self):
         self.campaign = self.new_test_ad_campaign()
         self.campaign.remote_create()
+
         self.ad_set = self.new_test_ad_set(self.campaign)
         self.ad_set.remote_create()
 
@@ -398,32 +521,27 @@ class AdGroupTestCase(AbstractCrudObjectTestCase):
 
         self.assert_can_delete(self.subject)
 
-        self.ad_set.remote_delete()
-        self.campaign.remote_delete()
 
-    def tearDown(self):
-        try:
-            self.subject.remote_delete()
-        except fbexceptions.FacebookBadObjectError:
-            pass
-
-        try:
-            self.ad_set.remote_delete()
-        except fbexceptions.FacebookBadObjectError:
-            pass
-
-        try:
-            self.campaign.remote_delete()
-        except fbexceptions.FacebookBadObjectError:
-            pass
-
+class TargetingSearchTestCase(AbstractObjectTestCase):
+    def test_call(self):
+        params = {
+            'q': 'uk',
+            'type': 'adgeolocation',
+            'location_types': ['country']
+        }
+        resp = objects.TargetingSearch.search(params=params)
+        assert len(resp) > 0
 
 class CustomAudienceTestCase(AbstractCrudObjectTestCase):
+
     def runTest(self):
         ca = objects.CustomAudience(
-            parent_id=self.TEST_ACCOUNT.get_id_assured())
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+        self.delete_in_teardown(ca)
         ca[objects.CustomAudience.Field.name] = \
             'Custom Audience Test ' + self.TEST_ID
+        ca[objects.CustomAudience.Field.subtype] = 'CUSTOM'
         ca.remote_create()
 
         users = ['someone@example.com']
@@ -440,6 +558,7 @@ class CustomAudienceTestCase(AbstractCrudObjectTestCase):
 
 
 class MultiProductAdObjectStorySpecTestCase(AbstractCrudObjectTestCase):
+
     def runTest(self):
         creative = self.new_test_ad_creative()
         creative[objects.AdCreative.Field.name] = 'MPA Creative'
@@ -451,7 +570,10 @@ class MultiProductAdObjectStorySpecTestCase(AbstractCrudObjectTestCase):
         link[link.Field.link] = 'https://www.facebook.com'
         link[link.Field.caption] = 'My Caption'
 
-        img = objects.AdImage(parent_id=self.TEST_ACCOUNT.get_id_assured())
+        img = objects.AdImage(
+            parent_id=self.TEST_ACCOUNT.get_id_assured(),
+        )
+        self.delete_in_teardown(img)
         img[objects.AdImage.Field.filename] = self.TEST_IMAGE_PATH
         img.remote_create()
 
@@ -486,8 +608,84 @@ class MultiProductAdObjectStorySpecTestCase(AbstractCrudObjectTestCase):
         self.assert_can_create(creative)
         self.assert_can_delete(creative)
 
+
+class AdImageTestCase(AbstractCrudObjectTestCase):
+
+    def test_can_upload_zip(self):
+        images = objects.AdImage.remote_create_from_zip(
+            filename=self.TEST_ZIP_PATH,
+            parent_id=self.TEST_ACCOUNT.get_id()
+        )
+        assert len(images) == 2
+
+    def test_can_read(self):
+        self.new_test_ad_image()
+        self.TEST_ACCOUNT.get_ad_images()
+
+
+class InsightsTestCase(AbstractCrudObjectTestCase):
+    def test_can_read_without_job(self):
+        self.TEST_ACCOUNT.get_insights(fields=[
+            objects.Insights.Field.clicks,
+            objects.Insights.Field.impressions,
+            objects.Insights.Field.adgroup_id,
+            objects.Insights.Field.adgroup_name,
+        ], params={
+            'level': objects.Insights.Level.adgroup,
+        })
+
+
+class BatchTestCase(FacebookAdsTestCase):
+
+    def setUp(self):
+        self.created_ids = []
+        self.num_campaigns = 5
+        super(BatchTestCase, self).setUp()
+
+    def create_campaigns(self):
+        ret_val = []
+        for i in range(self.num_campaigns):
+            campaign = self.new_test_ad_campaign()
+            ret_val.append(campaign)
+            self.delete_in_teardown(campaign)
+        return ret_val
+
+    def check_ids(self, campaigns):
+        # Check if the campaigns were created by counting distinct ids
+        ids = set(filter(None, [campaign[objects.AdCampaign.Field.id]
+                                for campaign in campaigns]))
+        self.created_ids.append(ids)
+        self.assertEqual(len(ids), len(campaigns))
+
+    def check_batch_size(self, batch):
+        # Make sure the calls went into the batch, not executed directly
+        self.assertEqual(len(batch), self.num_campaigns)
+
+    def execute_batch(self, batch, max_tries):
+        # Avoid a flaky test by retrying the batch calls if needed
+        for i in range(max_tries):
+            if batch:
+                batch = batch.execute()
+            else:
+                break
+
+    def test_batch_call(self):
+        campaigns = self.create_campaigns()
+        batch = FacebookAdsTestCase.TEST_API.new_batch()
+        for campaign in campaigns:
+            campaign.remote_create(batch=batch)
+        self.check_batch_size(batch)
+        self.execute_batch(batch, self.num_campaigns)
+        self.check_ids(campaigns)
+
+
 if __name__ == '__main__':
-    config_file = open('./config.json')
+    try:
+        config_file = open('./config.json')
+    except IOError:
+        print("No config file found, skipping integration tests")
+        sys.exit()
+
     config = json.load(config_file)
     config_file.close()
 

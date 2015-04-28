@@ -25,7 +25,44 @@ mixins contains attributes that objects share
 from facebookads.exceptions import FacebookBadObjectError
 
 
+class CanValidate(object):
+    """
+    An instance of CanValidate will allow the ad objects
+    to call remote_validate() to verify if its parameters are valid
+    """
+    def remote_validate(self, params=None):
+        params = params or {}
+        data_cache = dict(self._data)
+        changes_cache = dict(self._changes)
+        params['execution_options'] = ['validate_only']
+        self.save(params=params)
+        self._data = data_cache
+        self._changes = changes_cache
+        return self
+
+
 class CanArchive(object):
+
+    """
+    An instance of CanArchive will allow the ad objects
+    to call remote_delete() to be deleted using a POST request against
+    the object's status field.
+    """
+    def remote_delete(
+        self,
+        batch=None,
+        failure=None,
+        success=None
+    ):
+        return self.remote_update(
+            params={
+                self.Field.status: self.Status.deleted,
+            },
+            batch=batch,
+            failure=failure,
+            success=success,
+        )
+
     """
     An instance of CanArchive will allow the ad objects
     to call remote_archive() to be archived

@@ -27,15 +27,18 @@ How to run:
 
 import unittest
 import json
-
+import inspect
+from sys import version_info
 from .. import api
 from .. import objects
 from .. import specs
 from .. import exceptions
+from .. import session
 
 
 class CustomAudienceTestCase(unittest.TestCase):
-    def assert_format_params(self):
+
+    def test_format_params(self):
         payload = objects.CustomAudience.format_params(
             objects.CustomAudience.Schema.email_hash,
             ["  test  ", "test", "..test.."]
@@ -48,7 +51,7 @@ class CustomAudienceTestCase(unittest.TestCase):
         assert users[1] == users[0]
         assert users[2] == users[1]
 
-    def assert_fail_when_no_app_ids(self):
+    def test_fail_when_no_app_ids(self):
         def uid_payload():
             objects.CustomAudience.format_params(
                 objects.CustomAudience.Schema.uid,
@@ -59,17 +62,10 @@ class CustomAudienceTestCase(unittest.TestCase):
             uid_payload,
         )
 
-    def runTest(self):
-        self.assert_format_params()
-        self.assert_fail_when_no_app_ids()
-
 
 class EdgeIteratorTestCase(unittest.TestCase):
-    def runTest(self):
-        self.assert_builds_from_array()
-        self.assert_builds_from_object()
 
-    def assert_builds_from_array(self):
+    def test_builds_from_array(self):
         """
         Sometimes the response returns an array inside the data
         key. This asserts that we successfully build objects using
@@ -89,7 +85,7 @@ class EdgeIteratorTestCase(unittest.TestCase):
         objs = ei.build_objects_from_response(response)
         assert len(objs) == 2
 
-    def assert_builds_from_object(self):
+    def test_builds_from_object(self):
         """
         Sometimes the response returns a single JSON object. This asserts
         that we're not looking for the data key and that we correctly build
@@ -118,19 +114,65 @@ class EdgeIteratorTestCase(unittest.TestCase):
 
 
 class AbstractCrudObjectTestCase(unittest.TestCase):
-    def assert_delitem_changes_history(self):
+    def test_all_aco_has_id_field(self):
+        # Some objects do not have FBIDs or don't need checking (ACO)
+        for name, obj in inspect.getmembers(objects):
+            if (
+                inspect.isclass(obj) and
+                issubclass(obj, objects.AbstractCrudObject) and
+                obj != objects.AbstractCrudObject
+            ):
+                try:
+                    id_field = obj.Field.id
+                    assert id_field != ''
+                except Exception as e:
+                    self.fail("Could not instantiate " + name + "\n  " + str(e))
+
+    def test_inherits_account_id(self):
+        parent_id = 'act_19tg0j239g023jg9230j932'
+        api.FacebookAdsApi.set_default_account_id(parent_id)
+        ac = objects.AdAccount()
+        assert ac.get_parent_id() == parent_id
+        api.FacebookAdsApi._default_account_id = None
+
+    def test_delitem_changes_history(self):
         account = objects.AdAccount()
         account['name'] = 'foo'
         assert len(account._changes) > 0
         del account['name']
         assert len(account._changes) == 0
 
-    def runTest(self):
-        self.assert_delitem_changes_history()
+    def test_fields_to_params(self):
+        """
+        Demonstrates that AbstractCrudObject._assign_fields_to_params()
+        handles various combinations of params and fields properly.
+        """
+        class Foo(objects.AbstractCrudObject):
+            _default_read_fields = ['id', 'name']
+
+        class Bar(objects.AbstractCrudObject):
+            _default_read_fields = []
+
+        for adclass, fields, params, expected in [
+            (Foo, None, {}, {'fields': 'id,name'}),
+            (Foo, None, {'a': 'b'}, {'a': 'b', 'fields': 'id,name'}),
+            (Foo, ['x'], {}, {'fields': 'x'}),
+            (Foo, ['x'], {'a': 'b'}, {'a': 'b', 'fields': 'x'}),
+            (Foo, [], {}, {}),
+            (Foo, [], {'a': 'b'}, {'a': 'b'}),
+            (Bar, None, {}, {}),
+            (Bar, None, {'a': 'b'}, {'a': 'b'}),
+            (Bar, ['x'], {}, {'fields': 'x'}),
+            (Bar, ['x'], {'a': 'b'}, {'a': 'b', 'fields': 'x'}),
+            (Bar, [], {}, {}),
+            (Bar, [], {'a': 'b'}, {'a': 'b'}),
+        ]:
+            adclass._assign_fields_to_params(fields, params)
+            assert params == expected
 
 
 class AbstractObjectTestCase(unittest.TestCase):
-    def assert_export_nested_object(self):
+    def test_export_nested_object(self):
         obj = specs.ObjectStorySpec()
         obj2 = specs.OfferData()
         obj2['barcode'] = 'foo'
@@ -142,7 +184,7 @@ class AbstractObjectTestCase(unittest.TestCase):
         }
         assert obj.export_data() == expected
 
-    def assert_export_dict(self):
+    def test_export_dict(self):
         obj = specs.ObjectStorySpec()
         obj['link_data'] = {
             'link_data': 3
@@ -154,7 +196,7 @@ class AbstractObjectTestCase(unittest.TestCase):
         }
         assert obj.export_data() == expected
 
-    def assert_export_scalar(self):
+    def test_export_scalar(self):
         obj = specs.ObjectStorySpec()
         obj['link_data'] = 3
         expected = {
@@ -162,13 +204,13 @@ class AbstractObjectTestCase(unittest.TestCase):
         }
         assert obj.export_data() == expected
 
-    def assert_export_none(self):
+    def test_export_none(self):
         obj = specs.ObjectStorySpec()
         obj['link_data'] = None
         expected = {}
         assert obj.export_data() == expected
 
-    def assert_export_list(self):
+    def test_export_list(self):
         obj = objects.AdCreative()
         obj2 = specs.LinkData()
         obj3 = specs.AttachmentData()
@@ -181,7 +223,7 @@ class AbstractObjectTestCase(unittest.TestCase):
         except:
             self.fail("Objects in crud object export")
 
-    def assert_export_no_objects(self):
+    def test_export_no_objects(self):
         obj = specs.ObjectStorySpec()
         obj2 = specs.VideoData()
         obj2['description'] = "foo"
@@ -192,26 +234,89 @@ class AbstractObjectTestCase(unittest.TestCase):
         except:
             self.fail("Objects in object export")
 
-    def runTest(self):
-        self.assert_export_nested_object()
-        self.assert_export_dict()
-        self.assert_export_scalar()
-        self.assert_export_no_objects()
-        self.assert_export_list()
-        self.assert_export_none()
+    def test_can_print(self):
+        '''Must be able to print nested objects without serialization issues'''
+        obj = specs.ObjectStorySpec()
+        obj2 = specs.OfferData()
+        obj2['barcode'] = 'foo'
+        obj['offer_data'] = obj2
+
+        try:
+            obj.__repr__()
+        except TypeError as e:
+            self.fail('Cannot call __repr__ on AbstractObject\n %s' % e)
 
 
-class AbstractCrudObjectTestCase(unittest.TestCase):
+class SessionTestCase(unittest.TestCase):
 
-    def assert_inherits_account_id(self):
-        parent_id = 'act_19tg0j239g023jg9230j932'
-        api.FacebookAdsApi.set_default_account_id(parent_id)
-        ac = objects.AdAccount()
-        assert ac.get_parent_id() == parent_id
-        api.FacebookAdsApi._default_account_id = None
+    def gen_appsecret_proof(self, access_token, app_secret):
+        import hashlib
+        import hmac
 
-    def runTest(self):
-        self.assert_inherits_account_id()
+        if version_info < (3, 0):
+            h = hmac.new(
+                bytes(app_secret),
+                msg=bytes(access_token),
+                digestmod=hashlib.sha256
+            )
+        else:
+            h = hmac.new(
+                bytes(app_secret, 'utf-8'),
+                msg=bytes(access_token, 'utf-8'),
+                digestmod=hashlib.sha256
+            )
+        return h.hexdigest()
+
+    def test_appsecret_proof(self):
+        app_id = 'reikgukrhgfgtcheghjteirdldlrkjbu'
+        app_secret = 'gdrtejfdghurnhnjghjnertihbknlrvv'
+        access_token = 'bekguvjhdvdburldfnrfdguljijenklc'
+
+        fb_session = session.FacebookSession(app_id, app_secret, access_token)
+        self.assertEqual(
+            fb_session.appsecret_proof,
+            self.gen_appsecret_proof(access_token, app_secret)
+        )
+
+
+class BootstrapTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.old_api = objects.FacebookAdsApi.get_default_api()
+        objects.FacebookAdsApi.set_default_api(None)
+
+    def test_doesnt_authenticate_automatically_in_tests(self):
+        # importing bootstrap calls auth() in interactive environments
+        # check if this isn't happening in tests
+        from .. import bootstrap
+        self.assertEqual(objects.FacebookAdsApi.get_default_api(), None)
+
+    def test_can_authenticate(self):
+        from .. import bootstrap
+        bootstrap.auth()
+        self.assertNotEqual(objects.FacebookAdsApi.get_default_api(), None)
+
+    def tearDown(self):
+        objects.FacebookAdsApi.set_default_api(self.old_api)
+
+
+class ProductCatalogTestCase(unittest.TestCase):
+    def test_b64_encode_is_correct(self):
+        product_id = 'ID_1'
+        b64_id_as_str = 'SURfMQ=='
+
+        catalog = objects.ProductCatalog()
+        self.assertEqual(b64_id_as_str, catalog.b64_encoded_id(product_id))
+
+
+class SessionWithoutAppSecretTestCase(unittest.TestCase):
+    def test_appsecret_proof_absence(self):
+        try:
+            session.FacebookSession(
+                access_token='thisisfakeaccesstoken'
+            )
+        except Exception as e:
+            self.fail("Could not instantiate " + "\n  " + str(e))
 
 if __name__ == '__main__':
     unittest.main()
