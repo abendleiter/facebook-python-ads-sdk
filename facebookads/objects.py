@@ -2578,6 +2578,13 @@ class Page(AbstractCrudObject):
         return self.iterate_edge(PageEvents, fields, params)
 
 
+class Interest(CannotCreate, CannotDelete, AbstractCrudObject):
+    class Field(object):
+        id = 'id'
+        audience_size = 'audience_size'
+        name = 'name'
+
+
 class Event(AbstractCrudObject):
     class Field(object):
         id = 'id'
