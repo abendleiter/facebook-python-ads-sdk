@@ -2548,6 +2548,26 @@ class Insights(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
         impression = 'impression'
 
 
+class PublicPage(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
+    class Field:
+        about = 'about'
+        category = 'category'
+        checkins = 'checkins'
+        country_page_likes = 'country_page_likes'
+        description = 'description'
+        has_added_app = 'has_added_app'
+        is_community_page = 'is_community_page'
+        is_published = 'is_published'
+        new_like_count = 'new_like_count'
+        likes = 'likes'
+        link = 'link'
+        name = 'name'
+        talking_about_count = 'talking_about_count'
+        username = 'username'
+        website = 'website'
+        were_here_count = 'were_here_count'
+
+
 class Page(AbstractCrudObject):
 
     class Field(object):
