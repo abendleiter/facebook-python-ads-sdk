@@ -151,9 +151,14 @@ class EdgeIterator(object):
     def build_objects_from_response(self, response):
         if 'data' in response:
             ret = []
-            for json_obj in response['data']:
+            if isinstance(response['data'], list):
+                for json_obj in response['data']:
+                    obj = self._target_objects_class()
+                    obj._set_data(json_obj)
+                    ret.append(obj)
+            else:
                 obj = self._target_objects_class()
-                obj._set_data(json_obj)
+                obj._set_data(response['data'])
                 ret.append(obj)
         else:
             obj = self._target_objects_class()
@@ -1169,6 +1174,7 @@ class AdSet(CanValidate, HasStatus, CanArchive, AbstractCrudObject):
         id = 'id'
         is_autobid = 'is_autobid'
         lifetime_budget = 'lifetime_budget'
+        lifetime_imps = 'lifetime_imps'
         name = 'name'
         pacing_type = 'pacing_type'
         promoted_object = 'promoted_object'
@@ -1861,6 +1867,11 @@ class PartnerCategory(
 
 
 class RateCard(AbstractObject):
+
+    class Field(object):
+        country = "country"
+        currency = "currency"
+        rate = "rate"
 
     @classmethod
     def get_endpoint(cls):
