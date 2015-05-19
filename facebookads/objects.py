@@ -2567,6 +2567,7 @@ class PublicPage(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
         country_page_likes = 'country_page_likes'
         description = 'description'
         has_added_app = 'has_added_app'
+        id = 'id'
         is_community_page = 'is_community_page'
         is_published = 'is_published'
         new_like_count = 'new_like_count'
