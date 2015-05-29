@@ -2578,6 +2578,7 @@ class PublicPage(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
         username = 'username'
         website = 'website'
         were_here_count = 'were_here_count'
+        cover = 'cover'
 
 
 class Page(AbstractCrudObject):
