@@ -142,6 +142,28 @@ class FacebookRequestError(FacebookError):
         return tags
 
 
+class FacebookBadResponseError(FacebookRequestError):
+    """ A Facebook API response is not parseable as a JSON dict.
+
+        It might be an HTML error page instead, and possibly still have a
+        status of 200.
+    """
+    def __init__(
+        self, message,
+        request_context,
+        http_status,
+        http_headers,
+        body
+    ):
+        super(self.__class__, self).__init__(
+            message=message,
+            request_context=request_context,
+            http_status=http_status,
+            http_headers=http_headers,
+            body=body
+        )
+
+
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
     pass

@@ -23,7 +23,8 @@ objects module contains classes that represent and help traverse nodes on the
 Ads API.
 """
 
-from facebookads.exceptions import FacebookBadObjectError, FacebookError
+from facebookads.exceptions import FacebookBadObjectError, FacebookError, \
+    FacebookBadResponseError
 from facebookads.api import FacebookAdsApi
 from facebookads.session import FacebookSession
 from facebookads.mixins import (
@@ -130,11 +131,25 @@ class EdgeIterator(object):
         if 'summary' not in self._params:
             self._params['summary'] = True
 
-        response = self._source_object.get_api_assured().call(
+        response_obj = self._source_object.get_api_assured().call(
             'GET',
             self._path,
             params=self._params,
-        ).json()
+        )
+        response = response_obj.json()
+
+        if not isinstance(response, dict):
+            # AB-477: response body is not a JSON object
+            # (but possibly an HTML error page)
+            # http://sentry.abend.intra/abend/abend-production/group/1167/
+            # noinspection PyProtectedMember
+            raise FacebookBadResponseError(
+                "API call did not return a JSON object",
+                response_obj._call,
+                response_obj.status(),
+                response_obj.headers(),
+                response_obj.body()
+            )
 
         if 'paging' in response and 'next' in response['paging']:
             self._path = response['paging']['next']
