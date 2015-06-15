@@ -123,6 +123,24 @@ class FacebookRequestError(FacebookError):
     def api_blame_field_specs(self):
         return self._api_blame_field_specs
 
+    @property
+    def _sentry_tags(self):
+        # AB-477 Make FacebookRequestErrors easier to tell apart
+        tags = {}
+
+        headers = self.http_headers()
+        wanted = ('X-FB-Debug', 'X-FB-Rev', 'X-FB-Trace-ID')
+        if headers:
+            for name in (n for n in headers if n in wanted):
+                tags[name] = headers[name]
+
+        errcode = self.api_error_code()
+        subcode = self.api_error_subcode()
+        tags['FB-error-code'] = str(errcode) + (
+            '' if subcode is None else ('.' + str(subcode)))
+
+        return tags
+
 
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
