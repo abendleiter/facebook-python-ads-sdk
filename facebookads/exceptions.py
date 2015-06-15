@@ -136,8 +136,8 @@ class FacebookRequestError(FacebookError):
 
         errcode = self.api_error_code()
         subcode = self.api_error_subcode()
-        tags['FB-error-code'] = str(errcode) + (
-            '' if subcode is None else ('.' + str(subcode)))
+        tags['FB-error-code'] = str(errcode)
+        tags['FB-error-subcode'] = str(subcode)
 
         return tags
 
