@@ -63,7 +63,7 @@ class FacebookRequestError(FacebookError):
         self._api_error_message = None
         self._api_blame_field_specs = None
 
-        if self._body and 'error' in self._body:
+        if self._body and isinstance(self._body, dict) and 'error' in self._body:
             self._error = self._body['error']
             if 'message' in self._error:
                 self._api_error_message = self._error['message']
