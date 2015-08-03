@@ -2782,3 +2782,33 @@ class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
 
     def get_pages(self, fields=None, params=None):
         return self.iterate_edge(Page, fields, params)
+
+
+class Subscription(AbstractCrudObject):
+    class Field(object):
+        id = 'id'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'subscriptions'
+
+    def get_id_assured(self):
+        # subscriptions don't have an id!
+        return None
+
+
+class App(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
+    class Field(object):
+        id = 'id'
+        category = 'category'
+        link = 'link'
+        name = 'name'
+        namespace = 'namespace'
+
+    @classmethod
+    def get_endpoint(cls):
+        return ''
+
+    def get_subscriptions(self, fields=None, params=None):
+        """Returns iterator over AdAccount's associated with this user."""
+        return self.iterate_edge(Subscription, fields, params)
