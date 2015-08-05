@@ -2688,6 +2688,19 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
         public_key = 'public_key'
         cover = 'cover'
 
+    def get_friends(self, fields=None, params=None):
+        return self.iterate_edge(Friend, fields, params)
+
+    def get_events(self, fields=None, params=None):
+        return self.iterate_edge(UserEvents, fields, params)
+
+
+class Friend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
+    Field = FacebookUser.Field
+    @classmethod
+    def get_endpoint(cls):
+        return 'friends'
+
 
 class RSVP(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate):
     class Field(FacebookUser.Field):
@@ -2756,8 +2769,16 @@ class PageEvents(Event):
         return 'events'
 
 
-class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
+class UserEvents(Event):
+    @classmethod
+    def get_endpoint(cls):
+        return 'events'
 
+    class Field(Event.Field):
+        rsvp_status = 'rsvp_status'
+
+
+class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
     class Field(object):
         id = 'id'
         name = 'name'
