@@ -2691,6 +2691,9 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
     def get_friends(self, fields=None, params=None):
         return self.iterate_edge(Friend, fields, params)
 
+    def get_taggable_friends(self, fields=None, params=None):
+        return self.iterate_edge(TaggableFriend, fields, params)
+
     def get_events(self, fields=None, params=None):
         return self.iterate_edge(UserEvents, fields, params)
 
@@ -2700,6 +2703,13 @@ class Friend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
     @classmethod
     def get_endpoint(cls):
         return 'friends'
+
+
+class TaggableFriend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
+    Field = FacebookUser.Field
+    @classmethod
+    def get_endpoint(cls):
+        return 'taggable_friends'
 
 
 class RSVP(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate):
