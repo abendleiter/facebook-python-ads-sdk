@@ -2713,7 +2713,7 @@ class TaggableFriend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelet
         return 'taggable_friends'
 
 
-class RSVP(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate):
+class RSVP(AbstractCrudObject, CannotDelete, CannotUpdate):
     class Field(FacebookUser.Field):
         pass
 
@@ -2760,6 +2760,22 @@ class Event(AbstractCrudObject):
     @classmethod
     def get_endpoint(cls):
         return 'event'
+
+    def attend(self):
+        rsvp = RSVPAttending(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def maybe(self):
+        rsvp = RSVPMaybe(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def decline(self):
+        rsvp = RSVPDeclined(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def noreply(self):
+        rsvp = RSVPNoReply(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
 
     def get_rsvp_declined(self, fields=None, params=None):
         return self.iterate_edge(RSVPDeclined, fields, params)
