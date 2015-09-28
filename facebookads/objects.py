@@ -2860,3 +2860,20 @@ class App(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
     def get_subscriptions(self, fields=None, params=None):
         """Returns iterator over AdAccount's associated with this user."""
         return self.iterate_edge(Subscription, fields, params)
+
+
+class OAuthAccessToken(CannotCreate, CannotUpdate, CannotDelete, AbstractCrudObject):
+
+    class GrantType(object):
+        fb_exchange_token = 'fb_exchange_token'
+
+
+    class Field(object):
+        id = 'id'
+        grant_type = 'grant_type'
+        client_id = 'client_id'
+        client_secret = 'client_secret'
+        fb_exchange_token = 'fb_exchange_token'
+
+    def get_node_path(self):
+        return ('oauth', 'access_token')
