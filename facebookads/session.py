@@ -22,6 +22,7 @@
 The purpose of the session module is to encapsulate authentication classes and
 utilities.
 """
+from copy import copy
 import hashlib
 import hmac
 import requests
@@ -45,6 +46,15 @@ class FacebookSession(object):
     """
     GRAPH = 'https://graph.facebook.com'
 
+    default_requests_hooks = {}
+
+    @classmethod
+    def register_default_hooks(cls, hook):
+        for event, callable in hook.items():
+            if event not in cls.default_requests_hooks:
+                cls.default_requests_hooks[event] = []
+            cls.default_requests_hooks[event].append(callable)
+
     def __init__(self, app_id=None, app_secret=None, access_token=None):
         """
         Initializes and populates the instance attributes with app_id,
@@ -56,6 +66,13 @@ class FacebookSession(object):
         self.access_token = access_token
 
         self.requests = requests.Session()
+
+        # allow registering requests hooks. The registered hooks must be in the format specified
+        # by the requests library, see:
+        # http://docs.python-requests.org/en/v1.0.4/user/advanced/#event-hooks
+        self.requests.hooks = self.__class__.default_requests_hooks
+
+
         self.requests.verify = os.path.join(
             os.path.dirname(__file__),
             'fb_ca_chain_bundle.crt',

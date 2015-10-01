@@ -153,8 +153,13 @@ class FacebookAdsApi(object):
         'User-Agent': "fb-python-ads-api-sdk-%s" % SDK_VERSION,
     }
 
+    _request_callback_hooks = []
     _default_api = None
     _default_account_id = None
+
+    @classmethod
+    def register_hook(cls, callback_function):
+        cls._request_callback_hooks.append(callback_function)
 
     def __init__(self, session):
         """Initializes the api instance.
