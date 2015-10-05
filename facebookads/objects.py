@@ -27,7 +27,7 @@ from facebookads.exceptions import (
     FacebookBadObjectError,
     FacebookError,
     FacebookUnavailablePropertyException,
-)
+    FacebookBadResponseError)
 from facebookads.api import FacebookAdsApi
 from facebookads.session import FacebookSession
 from facebookads.mixins import (
@@ -143,7 +143,7 @@ class EdgeIterator(object):
         response_obj = self._source_object.get_api_assured().call(
             'GET',
             self._path,
-            params=self._params,
+            params=self.params,
         )
         response = response_obj.json()
 
