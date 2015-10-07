@@ -1398,6 +1398,7 @@ class AdSet(CanValidate, HasStatus, CanArchive, HasAdLabels,
         reach = 'REACH'
         social_impressions = 'SOCIAL_IMPRESSIONS'
         video_views = 'VIDEO_VIEWS'
+        lead_generation = 'LEAD_GENERATION'
 
     class PacingType(object):
         day_parting = 'day_parting'
