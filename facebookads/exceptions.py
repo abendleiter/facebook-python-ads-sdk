@@ -131,22 +131,30 @@ class FacebookRequestError(FacebookError):
         return self._api_blame_field_specs
 
     @property
-    def _sentry_tags(self):
+    def _sentry_data(self):
         # AB-477 Make FacebookRequestErrors easier to tell apart
         tags = {}
+        extra = {}
 
         headers = self.http_headers()
         wanted = ('X-FB-Debug', 'X-FB-Rev', 'X-FB-Trace-ID')
         if headers:
             for name in (n for n in headers if n in wanted):
-                tags[name] = headers[name]
+                extra[name] = headers[name]
 
-        errcode = self.api_error_code()
-        subcode = self.api_error_subcode()
-        tags['FB-error-code'] = str(errcode)
-        tags['FB-error-subcode'] = str(subcode)
+        errdata = (
+            ('FB-error-type', self.api_error_type()),
+            ('FB-error-code', self.api_error_code()),
+            ('FB-error-subcode', self.api_error_subcode()),
+            ('FB-error-message', self.api_error_message()),
+        )
+        errtags = {'FB-error-type'}
+        for key, value in errdata:
+            extra[key] = str(value)
+            if key in errtags:
+                tags[key] = value
 
-        return tags
+        return dict(tags=tags, extra=extra)
 
 
 class FacebookBadResponseError(FacebookRequestError):
