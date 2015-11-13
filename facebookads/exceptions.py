@@ -148,6 +148,20 @@ class FacebookRequestError(FacebookError):
 
         return tags
 
+    @classmethod
+    def from_exception(cls, e):
+        '''
+        helper method to instanciate inherited class of FacebookRequestError
+        '''
+        return cls(
+            message=e._message,
+            request_context=e._request_context,
+            http_status=e._http_status,
+            http_headers=e._http_headers,
+            body=e._body,
+        )
+
+
 
 class FacebookBadResponseError(FacebookRequestError):
     """ A Facebook API response is not parseable as a JSON dict.
@@ -156,6 +170,42 @@ class FacebookBadResponseError(FacebookRequestError):
         status of 200.
     """
     pass
+
+
+class FacebookRequestSubError(FacebookRequestError):
+    """ Base class for more specific facebook reqeust errors """
+    ERROR_CODE = None  # general error code of this error
+    SUBCODES = ()  # all subcodes this error should be able to fetch
+
+    @classmethod
+    def can_catch(cls, exception):
+        return (
+            exception.api_error_code() == cls.ERROR_CODE and
+            exception.api_error_subcode() in cls.SUBCODES
+        )
+
+
+class FacebookAccessTokenInvalid(FacebookRequestSubError):
+    """ The Facebook request faile due to an invalid or expired access token. """
+
+    ERROR_CODE = 190  # general error code for token related errors
+
+    SUBCODE_MALFORMED_TOKEN = None
+    SUBCODE_PASSWORD_CHANGED = 460   # user changed password, so the token is no longer valid
+    SUBCODE_NO_APP_PERMISSION = 458  # user did not grand permission for this app
+    SUBCODE_TOKEN_EXPIRED = 463      # user access token expired
+    SUBCODE_UNCONFIRMED_USER = 464   # user is not a confirmed user
+    SUBCODE_SESSION_INVALID =  461   # invalid session
+
+    SUBCODES = (
+        SUBCODE_MALFORMED_TOKEN,
+        SUBCODE_PASSWORD_CHANGED,
+        SUBCODE_NO_APP_PERMISSION,
+        SUBCODE_TOKEN_EXPIRED,
+        SUBCODE_UNCONFIRMED_USER,
+        SUBCODE_SESSION_INVALID,
+    )
+
 
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
