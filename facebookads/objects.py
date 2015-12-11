@@ -2947,6 +2947,21 @@ class PublicPage(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
         location = 'location'
 
 
+class UserPagePermission(AbstractCrudObject):
+    class Field(object):
+        role = 'role'
+        business = 'business'
+        user = 'user'
+        id = 'id'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'userpermissions'
+
+    def get_node_path(self):
+        return (self.get_parent_id_assured(), self.get_endpoint())
+
+
 class Page(AbstractCrudObject):
 
     class Field(object):
@@ -2975,6 +2990,17 @@ class Page(AbstractCrudObject):
 
     def get_events(self, fields=None, params=None):
         return self.iterate_edge(PageEvents, fields, params)
+
+    def get_user_permissions(self, fields=None, params=None):
+        return self.iterate_edge(UserPagePermission, fields, params)
+
+    def add_user_permission(self, user_id, business_id, role):
+        permission = UserPagePermission(parent_id=self.get_id_assured(), api=self.get_api())
+        permission.remote_create(params={'user': user_id, 'business': business_id, 'role': role})
+
+    def remove_user_permission(self, user_id, business_id):
+        permission = UserPagePermission(parent_id=self.get_id_assured(), api=self.get_api())
+        permission.remote_delete(params={'user': user_id, 'business': business_id})
 
 
 class Interest(CannotCreate, CannotDelete, AbstractCrudObject):
