@@ -3195,6 +3195,7 @@ class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
         tabs = 'tabs'
         type = 'type'
         url = 'url'
+        page_permissions = 'page_permissions'
 
     @classmethod
     def get_endpoint(cls):
@@ -3206,6 +3207,9 @@ class BusinessManager(CannotCreate, CannotDelete, AbstractCrudObject):
 
     def get_pages(self, fields=None, params=None):
         return self.iterate_edge(Page, fields, params)
+
+    def get_user_permissions(self, fields=None, params=None):
+        return self.iterate_edge(UserPagePermission, fields, params)
 
 
 class Subscription(AbstractCrudObject):
