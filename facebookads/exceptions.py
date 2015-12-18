@@ -159,7 +159,7 @@ class FacebookRequestError(FacebookError):
     @classmethod
     def from_exception(cls, e):
         '''
-        helper method to instanciate inherited class of FacebookRequestError
+        helper method to instantiate inherited class of FacebookRequestError
         '''
         return cls(
             message=e._message,
@@ -168,7 +168,6 @@ class FacebookRequestError(FacebookError):
             http_headers=e._http_headers,
             body=e._body,
         )
-
 
 
 class FacebookBadResponseError(FacebookRequestError):
@@ -193,6 +192,12 @@ class FacebookRequestSubError(FacebookRequestError):
         )
 
 
+class FacebookTransientError(FacebookRequestSubError):
+    @classmethod
+    def can_catch(cls, exception):
+        return exception.body().get('error', {}).get('is_transient', False)
+
+
 class FacebookAccessTokenInvalid(FacebookRequestSubError):
     """ The Facebook request faile due to an invalid or expired access token. """
 
@@ -213,7 +218,6 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
         SUBCODE_UNCONFIRMED_USER,
         SUBCODE_SESSION_INVALID,
     )
-
 
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""

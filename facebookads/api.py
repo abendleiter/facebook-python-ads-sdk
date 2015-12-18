@@ -25,7 +25,7 @@ api module contains classes that make http requests to Facebook's graph API.
 from facebookads.exceptions import (
     FacebookRequestError,
     FacebookBadObjectError,
-    FacebookAccessTokenInvalid)
+    FacebookAccessTokenInvalid, FacebookTransientError)
 from facebookads.session import FacebookSession
 from facebookads.utils import urls
 from facebookads.utils import version
@@ -116,6 +116,8 @@ class FacebookResponse(object):
         # check if this is call failed due to an invalid token
         if FacebookAccessTokenInvalid.can_catch(error):
             return FacebookAccessTokenInvalid.from_exception(error)
+        if FacebookTransientError.can_catch(error):
+            return FacebookTransientError.from_exception(error)
         # return the original error if no specific error is found
         return error
 
