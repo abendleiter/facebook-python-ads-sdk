@@ -49,6 +49,10 @@ import json
 import six
 import base64
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class EdgeIterator(object):
 
     """EdgeIterator is an iterator over an object's connections.
@@ -67,6 +71,7 @@ class EdgeIterator(object):
         fields=None,
         params=None,
         include_summary=True,
+        maximum_results=None
     ):
         """
         Initializes an iterator over the objects to which there is an edge from
@@ -83,6 +88,11 @@ class EdgeIterator(object):
                 is the parameter name and its value is a string or an object
                 which can be JSON-encoded.
         """
+        if 'limit' in self.params:
+            self._page_size = self.params['limit']
+
+        self._maximum_results = maximum_results
+
         self.params = dict(params or {})
         target_objects_class._assign_fields_to_params(fields, self.params)
         self._source_object = source_object
@@ -94,7 +104,13 @@ class EdgeIterator(object):
         self._queue = []
         self._finished_iteration = False
         self._total_count = None
+
         self._include_summary = include_summary
+        self._page_count = 0
+        self._results_count = 0
+        self._called_paths = []
+        if self._source_object.get_api():
+            self.load_next_page()
 
     def __repr__(self):
         return str(self._queue)
@@ -109,9 +125,27 @@ class EdgeIterator(object):
         # Load next page at end.
         # If load_next_page returns False, raise StopIteration exception
         if not self._queue and not self.load_next_page():
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(
+                    'Stopped after iterating %d objects of %s' % (
+                        self._results_count,
+                        self._target_objects_class
+                    )
+                )
             raise StopIteration()
 
-        return self._queue.pop(0)
+        if not self._maximum_results or self._results_count < self._maximum_results:
+            self._results_count += 1
+            return self._queue.pop(0)
+        else:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(
+                    'Stopped after iterating %d objects of class %s' % (
+                        self._results_count,
+                        self._target_objects_class
+                    )
+                )
+            raise StopIteration()
 
     # Python 2 compatibility.
     next = __next__
@@ -161,7 +195,14 @@ class EdgeIterator(object):
             )
 
         if 'paging' in response and 'next' in response['paging']:
-            self._path = response['paging']['next']
+            if response['paging']['next'] not in self._called_paths:
+                self._path = response['paging']['next']
+                self._called_paths.append(self._path)
+            else:
+                logger.warn("'next' link '%s' has been called before with params %s.\n"
+                            "Breaking the iteration at this point to avoid running into a "
+                            "loophole!" % (response['paging']['next'], str(self.params)))
+                self._finished_iteration = True
         else:
             # Indicate if this was the last page
             self._finished_iteration = True
@@ -760,7 +801,7 @@ class AbstractCrudObject(AbstractObject):
     save = remote_save
 
     def iterate_edge(self, target_objects_class, fields=None, params=None,
-                     fetch_first_page=True, include_summary=True):
+                     fetch_first_page=True, include_summary=True, maximum_results=None):
         """
         Returns EdgeIterator with argument self as source_object and
         the rest as given __init__ arguments.
@@ -774,6 +815,7 @@ class AbstractCrudObject(AbstractObject):
             fields=fields,
             params=params,
             include_summary=include_summary,
+            maximum_results=maximum_results,
         )
         if fetch_first_page:
             iterator.load_next_page()
@@ -3153,17 +3195,17 @@ class Event(AbstractCrudObject):
         rsvp = RSVPNoReply(parent_id=self.get_id_assured(), api=self.get_api())
         rsvp.remote_create()
 
-    def get_rsvp_declined(self, fields=None, params=None):
-        return self.iterate_edge(RSVPDeclined, fields, params)
+    def get_rsvp_declined(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPDeclined, fields, params, maximum_results=maximum_results)
 
-    def get_rsvp_attending(self, fields=None, params=None):
-        return self.iterate_edge(RSVPAttending, fields, params)
+    def get_rsvp_attending(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPAttending, fields, params, maximum_results=maximum_results)
 
-    def get_rsvp_maybe(self, fields=None, params=None):
-        return self.iterate_edge(RSVPMaybe, fields, params)
+    def get_rsvp_maybe(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPMaybe, fields, params, maximum_results=maximum_results)
 
-    def get_rsvp_noreply(self, fields=None, params=None):
-        return self.iterate_edge(RSVPNoReply, fields, params)
+    def get_rsvp_noreply(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPNoReply, fields, params, maximum_results=maximum_results)
 
 
 class PageEvents(Event):
