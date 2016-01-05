@@ -94,7 +94,7 @@ class FacebookResponse(object):
             return False
         elif bool(json_body):
             # Has body and no error
-            if 'success' in json_body:
+            if isinstance(json_body, collections.Mapping) and 'success' in json_body:
                 return json_body['success']
             return True
         elif self._http_status == http_client.NOT_MODIFIED:
