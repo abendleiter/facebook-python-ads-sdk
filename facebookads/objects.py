@@ -87,10 +87,11 @@ class EdgeIterator(object):
             params (optional): A mapping of request parameters where a key
                 is the parameter name and its value is a string or an object
                 which can be JSON-encoded.
-        """
-        if 'limit' in self.params:
-            self._page_size = self.params['limit']
+            include_summary:
+            maximum_results: Maximum number of results to be crawled. The iterator stops when the
+                maximum is reached
 
+        """
         self._maximum_results = maximum_results
 
         self.params = dict(params or {})
@@ -106,11 +107,8 @@ class EdgeIterator(object):
         self._total_count = None
 
         self._include_summary = include_summary
-        self._page_count = 0
         self._results_count = 0
         self._called_paths = []
-        if self._source_object.get_api():
-            self.load_next_page()
 
     def __repr__(self):
         return str(self._queue)
@@ -125,27 +123,23 @@ class EdgeIterator(object):
         # Load next page at end.
         # If load_next_page returns False, raise StopIteration exception
         if not self._queue and not self.load_next_page():
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(
-                    'Stopped after iterating %d objects of %s' % (
-                        self._results_count,
-                        self._target_objects_class
-                    )
-                )
+            logger.debug(
+                'Stopped after iterating %d objects of %s',
+                self._results_count,
+                self._target_objects_class
+            )
             raise StopIteration()
 
-        if not self._maximum_results or self._results_count < self._maximum_results:
-            self._results_count += 1
-            return self._queue.pop(0)
-        else:
-            if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(
-                    'Stopped after iterating %d objects of class %s' % (
-                        self._results_count,
-                        self._target_objects_class
-                    )
-                )
+        if self._maximum_results and self._results_count >= self._maximum_results:
+            logger.debug(
+                'Stopped after iterating %d objects of class %s',
+                self._results_count,
+                self._target_objects_class
+            )
             raise StopIteration()
+
+        self._results_count += 1
+        return self._queue.pop(0)
 
     # Python 2 compatibility.
     next = __next__
@@ -194,18 +188,19 @@ class EdgeIterator(object):
                 response_obj.body()
             )
 
-        if 'paging' in response and 'next' in response['paging']:
-            if response['paging']['next'] not in self._called_paths:
-                self._path = response['paging']['next']
-                self._called_paths.append(self._path)
-            else:
+        has_paging = 'paging' in response and 'next' in response['paging']
+        is_duplicate_page = response.get('paging', {}).get('next') in self._called_paths
+
+        if not has_paging or is_duplicate_page:
+            self._finished_iteration = True
+            if is_duplicate_page:
                 logger.warn("'next' link '%s' has been called before with params %s.\n"
                             "Breaking the iteration at this point to avoid running into a "
-                            "loophole!" % (response['paging']['next'], str(self.params)))
-                self._finished_iteration = True
+                            "loophole!" % (response.get('paging', {}).get('next'),
+                                           str(self.params)))
         else:
-            # Indicate if this was the last page
-            self._finished_iteration = True
+            self._path = response['paging']['next']
+            self._called_paths.append(self._path)
 
         if (
             self._include_summary and
