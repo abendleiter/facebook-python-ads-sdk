@@ -158,9 +158,14 @@ class FacebookRequestError(FacebookError):
 
     @classmethod
     def from_exception(cls, e):
-        '''
+        """
         helper method to instantiate inherited class of FacebookRequestError
-        '''
+
+        Args:
+            e: the original FacebookRequestError
+
+        Returns: an instance of this class, populated with the FacebookRequestError data
+        """
         return cls(
             message=e._message,
             request_context=e._request_context,
@@ -195,7 +200,17 @@ class FacebookRequestSubError(FacebookRequestError):
 class FacebookTransientError(FacebookRequestSubError):
     @classmethod
     def can_catch(cls, exception):
-        return exception.body().get('error', {}).get('is_transient', False)
+        # General Transient Error
+        body = exception.body()
+        if body and type(body) == dict:
+            error = body.get('error', False)
+            if error and type(error) == dict:
+                if error.get('is_transient', False):
+                    return True
+        # "Try Again Soon"-error of /page/userpermissions
+        if exception.api_error_code() == 2 and exception.api_error_subcode() == 1342001:
+            return True
+        return False
 
 
 class FacebookAccessTokenInvalid(FacebookRequestSubError):
@@ -208,7 +223,7 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
     SUBCODE_NO_APP_PERMISSION = 458  # user did not grand permission for this app
     SUBCODE_TOKEN_EXPIRED = 463      # user access token expired
     SUBCODE_UNCONFIRMED_USER = 464   # user is not a confirmed user
-    SUBCODE_SESSION_INVALID =  461   # invalid session
+    SUBCODE_SESSION_INVALID = 461    # invalid session
 
     SUBCODES = (
         SUBCODE_MALFORMED_TOKEN,
@@ -218,6 +233,7 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
         SUBCODE_UNCONFIRMED_USER,
         SUBCODE_SESSION_INVALID,
     )
+
 
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
