@@ -21,6 +21,7 @@
 """
 api module contains classes that make http requests to Facebook's graph API.
 """
+from http.client import BadStatusLine
 
 from facebookads.exceptions import (
     FacebookRequestError,
@@ -93,7 +94,7 @@ class FacebookResponse(object):
             return False
         elif bool(json_body):
             # Has body and no error
-            if 'success' in json_body:
+            if isinstance(json_body, collections.Mapping) and 'success' in json_body:
                 return json_body['success']
             return True
         elif self._http_status == http_client.NOT_MODIFIED:
@@ -306,33 +307,46 @@ class FacebookAdsApi(object):
 
         # Get request response and encapsulate it in a FacebookResponse
         if method in ('GET', 'DELETE'):
+            kwargs = {'params': params}
+        else:
+            kwargs = {'data': params}
+
+        try:
             response = self._session.requests.request(
                 method,
                 path,
-                params=params,
                 headers=headers,
                 files=files,
+                **kwargs
+            )
+        except ConnectionError as e:
+            # Catch the BadStatusLine ConnectionError by creating a fake response that has failed,
+            # which then can generate its own FacebookRequestError.
+            fb_response = FacebookResponse(
+                body=str(e),
+                headers={},
+                http_status=500,  # an error code != 200 will make is_failure() == True
+                call={
+                    'method': method,
+                    'path': path,
+                    'params': params,
+                    'headers': headers,
+                    'files': files,
+                },
             )
         else:
-            response = self._session.requests.request(
-                method,
-                path,
-                data=params,
-                headers=headers,
-                files=files,
+            fb_response = FacebookResponse(
+                body=response.text,
+                headers=response.headers,
+                http_status=response.status_code,
+                call={
+                    'method': method,
+                    'path': path,
+                    'params': params,
+                    'headers': headers,
+                    'files': files,
+                },
             )
-        fb_response = FacebookResponse(
-            body=response.text,
-            headers=response.headers,
-            http_status=response.status_code,
-            call={
-                'method': method,
-                'path': path,
-                'params': params,
-                'headers': headers,
-                'files': files,
-            },
-        )
 
         if fb_response.is_failure():
             raise fb_response.error()
