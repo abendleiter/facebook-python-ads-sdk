@@ -193,9 +193,20 @@ class FacebookRequestSubError(FacebookRequestError):
 
 
 class FacebookTransientError(FacebookRequestSubError):
+
+    # "error_user_title": "Try Again Soon",
+    # "message": "Service temporarily unavailable",
+    # "error_user_msg": "Sorry, there's a temporary problem with this post. Please try again in a few moments.",
+    ERROR_CODE = 2
+    SUBCODE_TRY_AGAIN_SOON = 1342001
+    SUBCODES = (
+        SUBCODE_TRY_AGAIN_SOON,
+    )
+
     @classmethod
     def can_catch(cls, exception):
-        return exception.body().get('error', {}).get('is_transient', False)
+        is_transient = exception.body().get('error', {}).get('is_transient', False)
+        return is_transient or super().can_catch(exception)
 
 
 class FacebookAccessTokenInvalid(FacebookRequestSubError):
