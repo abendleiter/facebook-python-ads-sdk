@@ -158,9 +158,14 @@ class FacebookRequestError(FacebookError):
 
     @classmethod
     def from_exception(cls, e):
-        '''
+        """
         helper method to instantiate inherited class of FacebookRequestError
-        '''
+
+        Args:
+            e: the original FacebookRequestError
+
+        Returns: an instance of this class, populated with the FacebookRequestError data
+        """
         return cls(
             message=e._message,
             request_context=e._request_context,
@@ -205,7 +210,13 @@ class FacebookTransientError(FacebookRequestSubError):
 
     @classmethod
     def can_catch(cls, exception):
-        is_transient = exception.body().get('error', {}).get('is_transient', False)
+        # General Transient Error
+        is_transient = False
+        body = exception.body()
+        if body and type(body) == dict:
+            error = body.get('error', False)
+            if error and type(error) == dict:
+                is_transient = error.get('is_transient', False)
         return is_transient or super().can_catch(exception)
 
 
@@ -219,7 +230,7 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
     SUBCODE_NO_APP_PERMISSION = 458  # user did not grand permission for this app
     SUBCODE_TOKEN_EXPIRED = 463      # user access token expired
     SUBCODE_UNCONFIRMED_USER = 464   # user is not a confirmed user
-    SUBCODE_SESSION_INVALID =  461   # invalid session
+    SUBCODE_SESSION_INVALID = 461    # invalid session
 
     SUBCODES = (
         SUBCODE_MALFORMED_TOKEN,
@@ -229,6 +240,7 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
         SUBCODE_UNCONFIRMED_USER,
         SUBCODE_SESSION_INVALID,
     )
+
 
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
