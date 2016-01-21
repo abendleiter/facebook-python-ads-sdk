@@ -35,6 +35,7 @@ import six
 import collections
 import re
 from six.moves import http_client
+from requests.exceptions import ConnectionError as RequestsConnectionError
 
 
 class FacebookResponse(object):
@@ -319,7 +320,7 @@ class FacebookAdsApi(object):
                 files=files,
                 **kwargs
             )
-        except ConnectionError as e:
+        except RequestsConnectionError as e:
             # Catch the BadStatusLine ConnectionError by creating a fake response that has failed,
             # which then can generate its own FacebookRequestError.
             fb_response = FacebookResponse(
