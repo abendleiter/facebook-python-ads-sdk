@@ -2982,6 +2982,8 @@ class PublicPage(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
         were_here_count = 'were_here_count'
         cover = 'cover'
         location = 'location'
+        emails = 'emails'
+        phone = 'phone'
 
 
 class UserPagePermission(AbstractCrudObject):
