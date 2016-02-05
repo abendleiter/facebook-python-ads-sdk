@@ -26,7 +26,9 @@ from http.client import BadStatusLine
 from facebookads.exceptions import (
     FacebookRequestError,
     FacebookBadObjectError,
-    FacebookAccessTokenInvalid, FacebookTransientError)
+    FacebookAccessTokenInvalid,
+    FacebookTransientError,
+    FacebookCantEditAdsetException)
 from facebookads.session import FacebookSession
 from facebookads.utils import urls
 from facebookads.utils import version
@@ -120,6 +122,8 @@ class FacebookResponse(object):
             return FacebookAccessTokenInvalid.from_exception(error)
         if FacebookTransientError.can_catch(error):
             return FacebookTransientError.from_exception(error)
+        if FacebookCantEditAdsetException.can_catch(error):
+            return FacebookCantEditAdsetException.from_exception(error)
         # return the original error if no specific error is found
         return error
 
