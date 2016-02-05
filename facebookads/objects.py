@@ -173,20 +173,8 @@ class EdgeIterator(object):
             self._path,
             params=self.params,
         )
+        FacebookBadResponseError.check_bad_response(response_obj)
         response = response_obj.json()
-
-        if not isinstance(response, dict):
-            # AB-477: response body is not a JSON object
-            # (but possibly an HTML error page)
-            # http://sentry.abend.intra/abend/abend-production/group/1167/
-            # noinspection PyProtectedMember
-            raise FacebookBadResponseError(
-                "API call did not return a JSON object",
-                response_obj._call,
-                response_obj.status(),
-                response_obj.headers(),
-                response_obj.body()
-            )
 
         has_paging = 'paging' in response and 'next' in response['paging']
         is_duplicate_page = response.get('paging', {}).get('next') in self._called_paths
@@ -657,6 +645,7 @@ class AbstractCrudObject(AbstractObject):
                 params=params,
                 api_version=api_version,
             )
+            FacebookBadResponseError.check_bad_response(response)
             self._set_data(response.json())
 
             return self
