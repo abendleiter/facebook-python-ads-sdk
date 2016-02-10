@@ -181,7 +181,18 @@ class FacebookBadResponseError(FacebookRequestError):
         It might be an HTML error page instead, and possibly still have a
         status of 200.
     """
-    pass
+    @classmethod
+    def check_bad_response(cls, facebook_response):
+        # AB-477: response body is not a JSON object (but possibly an HTML error page)
+        # AB-1107: generalized FacebookBadResponseError for AbstractCrudObject.remote_read
+        if not isinstance(facebook_response.json(), dict):
+            raise FacebookBadResponseError(
+                "API call did not return a JSON object",
+                facebook_response._call,
+                facebook_response.status(),
+                facebook_response.headers(),
+                facebook_response.body()
+            )
 
 
 class FacebookRequestSubError(FacebookRequestError):
