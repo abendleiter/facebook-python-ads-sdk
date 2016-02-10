@@ -261,3 +261,20 @@ class FacebookBadObjectError(FacebookError):
 class FacebookUnavailablePropertyException(FacebookError):
     """Raised when an object's property or method is not available."""
     pass
+
+
+class FacebookCantEditAdsetException(FacebookRequestSubError):
+    """
+     Response: { "error": {
+     "code": 100,
+     "type": "OAuthException",
+     "is_transient": false,
+     "error_subcode": 1487056,
+     "message": "Invalid parameter",
+     "error_user_title":
+     "Can't Edit Ad Set",
+     "error_user_msg": "You can't edit this ad set. You can only edit active or paused ad sets." }
+     }
+    """
+    ERROR_CODE = 100
+    SUBCODES = [1487056]
