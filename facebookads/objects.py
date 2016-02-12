@@ -1669,6 +1669,7 @@ class AdImage(CannotUpdate, AbstractCrudObject):
         hash = 'hash'
         id = 'id'
         url = 'url'
+        permalink_url = 'permalink_url'
 
     @classmethod
     def get_endpoint(cls):
