@@ -2347,11 +2347,17 @@ class GraphSearch(AbstractObject):
 
     @classmethod
     def search_page(cls, q, fields):
-        return GraphSearch.search(
+        results = GraphSearch.search(
             q,
             object_type=GraphSearch.ObjectType.page,
             params={'fields': ','.join(fields)}
         )
+        retval = []
+        for result in results:
+            page = Page()
+            page.update(result._data)
+            retval.append(page)
+        return retval
 
 
 class TargetingSearch(AbstractObject):
