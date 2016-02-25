@@ -2312,6 +2312,48 @@ class TargetingDescription(AbstractObject):
         return 'targetingsentencelines'
 
 
+class GraphSearch(AbstractObject):
+    class ObjectType:
+        page = 'page'
+        event = 'event'
+        user = 'user'
+        group = 'group'
+        placetopic = 'placetopic'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'search'
+
+    @classmethod
+    def search(cls, q, object_type=None, params=None, api=None):
+        api = api or FacebookAdsApi.get_default_api()
+        if not api:
+            raise FacebookBadObjectError(
+                "An Api instance must be provided as an argument or set as "
+                "the default Api in FacebookAdsApi."
+            )
+        params = params.copy() if params else {}
+        params['q'] = q
+        if object_type:
+            params['type'] = object_type
+        url = "/".join((FacebookSession.GRAPH, FacebookAdsApi.API_VERSION, 'search'))
+        response = api.call(FacebookAdsApi.HTTP_METHOD_GET, url,params).json()
+        retval = []
+        for result in response['data']:
+            search_obj = GraphSearch()
+            search_obj.update(result)
+            retval.append(search_obj)
+        return retval
+
+    @classmethod
+    def search_page(cls, q, fields):
+        return GraphSearch.search(
+            q,
+            object_type=GraphSearch.ObjectType.page,
+            params={'fields': ','.join(fields)}
+        )
+
+
 class TargetingSearch(AbstractObject):
 
     class DemographicSearchClasses(object):
