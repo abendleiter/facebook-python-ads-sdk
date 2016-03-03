@@ -1409,11 +1409,13 @@ class AdSet(CanValidate, HasStatus, CanArchive, HasAdLabels,
 
     class OptimizationGoal(object):
         app_installs = 'APP_INSTALLS'
+        brand_awareness = 'BRAND_AWARENESS'
         clicks = 'CLICKS'
         engaged_users = 'ENGAGED_USERS'
         event_responses = 'EVENT_RESPONSES'
         external = 'EXTERNAL'
         impressions = 'IMPRESSIONS'
+        lead_generation = 'LEAD_GENERATION'
         link_clicks = 'LINK_CLICKS'
         none = 'NONE'
         offer_claims = 'OFFER_CLAIMS'
@@ -1424,7 +1426,7 @@ class AdSet(CanValidate, HasStatus, CanArchive, HasAdLabels,
         reach = 'REACH'
         social_impressions = 'SOCIAL_IMPRESSIONS'
         video_views = 'VIDEO_VIEWS'
-        lead_generation = 'LEAD_GENERATION'
+
 
     class PacingType(object):
         day_parting = 'day_parting'
