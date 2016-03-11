@@ -715,7 +715,6 @@ class AbstractCrudObject(AbstractObject):
                 api_version=api_version,
             )
             self._clear_history()
-
             return self
 
     def remote_delete(
@@ -1341,11 +1340,12 @@ class AdSet(CanValidate, HasStatus, CanArchive, HasAdLabels,
         budget_remaining = 'budget_remaining'
         campaign_id = 'campaign_id'
         adset_schedule = 'adset_schedule'
-        configured_status = 'configured_status'
+        configured_status = 'configured_status'  # used for reading
+        status = 'status'  # used for writing
         created_time = 'created_time'
         creative_sequence = 'creative_sequence'
         daily_budget = 'daily_budget'
-        effective_status = 'effective_status'
+        effective_status = 'effective_status'  # used for reading
         end_time = 'end_time'
         id = 'id'
         is_autobid = 'is_autobid'
