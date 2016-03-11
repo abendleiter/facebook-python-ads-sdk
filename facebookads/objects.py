@@ -1293,8 +1293,9 @@ class Campaign(CanValidate, HasStatus, HasObjective, HasAdLabels, CanArchive,
         account_id = 'account_id'
         adlabels = 'adlabels'
         buying_type = 'buying_type'
-        configured_status = 'configured_status'
-        effective_status = 'effective_status'
+        status = 'status'  # used for writing
+        configured_status = 'configured_status'  # used for reading
+        effective_status = 'effective_status'  # used for reading
         id = 'id'
         is_completed = 'is_completed'
         name = 'name'
@@ -1432,11 +1433,12 @@ class Ad(HasStatus, CanArchive, HasAdLabels, AbstractCrudObject):
         campaign_id = 'campaign_id'
         bid_amount = 'bid_amount'
         bid_info = 'bid_info'
-        configured_status = 'configured_status'
+        configured_status = 'configured_status'  # used for reading
         conversion_specs = 'conversion_specs'
         created_time = 'created_time'
         creative = 'creative'
-        effective_status = 'effective_status'
+        effective_status = 'effective_status'   # used for reading
+        status = 'status'  # used for writing
         failed_delivery_checks = 'failed_delivery_checks'
         id = 'id'
         name = 'name'
