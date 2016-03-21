@@ -278,3 +278,27 @@ class FacebookCantEditAdsetException(FacebookRequestSubError):
     """
     ERROR_CODE = 100
     SUBCODES = [1487056]
+
+
+class FacebookInsufficientPermissionsForAdCreation(FacebookRequestSubError):
+    """
+    Occurs when an AdCreative should be created, but the we don't have the permissions required
+    to create Ads for a particular page.
+
+    Response:
+      {
+        "error": {
+          "message": "Invalid parameter",
+          "error_subcode": 1487202,
+          "error_user_title": "Only Admins Can Run Ads for Pages",
+          "type": "OAuthException",
+          "is_transient": false,
+          "fbtrace_id": "BHp0+PsitNI",
+          "code": 100,
+          "error_user_msg": "If you want to create an ad, please ask the Facebook Page manager to
+          give you permission by adding you to admin, editor or advertiser page roles."
+        }
+      }
+    """
+    ERROR_CODE = 100
+    SUBCODES = [1487202]
