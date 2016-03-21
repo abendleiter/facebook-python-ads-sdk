@@ -28,7 +28,7 @@ from facebookads.exceptions import (
     FacebookBadObjectError,
     FacebookAccessTokenInvalid,
     FacebookTransientError,
-    FacebookCantEditAdsetException)
+    FacebookCantEditAdsetException, FacebookInsufficientPermissionsForAdCreation)
 from facebookads.session import FacebookSession
 from facebookads.utils import urls
 from facebookads.utils import version
@@ -124,6 +124,8 @@ class FacebookResponse(object):
             return FacebookTransientError.from_exception(error)
         if FacebookCantEditAdsetException.can_catch(error):
             return FacebookCantEditAdsetException.from_exception(error)
+        if FacebookInsufficientPermissionsForAdCreation.can_catch(error):
+            return FacebookInsufficientPermissionsForAdCreation.from_exception(error)
         # return the original error if no specific error is found
         return error
 
