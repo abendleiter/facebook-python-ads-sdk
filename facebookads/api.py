@@ -31,7 +31,6 @@ from facebookads.exceptions import (
     FacebookCantEditAdsetException,
     FacebookInsufficientPermissionsForAdCreation,
     FacebookOopsException,
-    FacebookOnlyAdminsCanRunAdsforPages,
     FacebookUnknownError,
 )
 from facebookads.session import FacebookSession
@@ -129,12 +128,11 @@ class FacebookResponse(object):
             FacebookCantEditAdsetException,
             FacebookInsufficientPermissionsForAdCreation,
             FacebookOopsException,
-            FacebookOnlyAdminsCanRunAdsforPages,
             FacebookUnknownError,
         ]
-        for exception_class in exception_sub_classes:
-            if getattr(exception_class, 'can_catch')(error):
-                return getattr(exception_class, 'from_exception')(error)
+        for cls in exception_sub_classes:
+            if cls.can_catch(error):
+                return cls.from_exception(error)
 
         # return the original error if no specific error is found
         return error
