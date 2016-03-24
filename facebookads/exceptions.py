@@ -302,3 +302,34 @@ class FacebookInsufficientPermissionsForAdCreation(FacebookRequestSubError):
     """
     ERROR_CODE = 100
     SUBCODES = [1487202]
+
+
+class FacebookOopsException(FacebookRequestSubError):
+    '''
+    Inexplicable errors that almost never occur, but are not very spcific in their existance
+
+    Response:
+    {
+      "error": {
+        "message": "Invalid parameter",
+        "error_subcode": 1487390,
+        "error_user_title": "Adcreative Create Failed",
+        "type": "OAuthException",
+        "is_transient": false,
+        "fbtrace_id": "APpX9NB5Y0e",
+        "code": 100,
+        "error_user_msg": "The Adcreative Create Failed for the following reason: Oops, something went wrong. Please try again later"
+      }
+    }
+    '''
+    ERROR_CODE = 100
+    SUBCODES = [1487390]
+
+
+class FacebookUnknownError(FacebookRequestSubError):
+    @classmethod
+    def can_catch(cls, exception):
+        return (
+            exception.api_error_code == 1 and
+            exception.api_error_message() == 'An unknown error occurred'
+        )

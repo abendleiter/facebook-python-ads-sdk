@@ -28,7 +28,11 @@ from facebookads.exceptions import (
     FacebookBadObjectError,
     FacebookAccessTokenInvalid,
     FacebookTransientError,
-    FacebookCantEditAdsetException, FacebookInsufficientPermissionsForAdCreation)
+    FacebookCantEditAdsetException,
+    FacebookInsufficientPermissionsForAdCreation,
+    FacebookOopsException,
+    FacebookUnknownError,
+)
 from facebookads.session import FacebookSession
 from facebookads.utils import urls
 from facebookads.utils import version
@@ -118,14 +122,18 @@ class FacebookResponse(object):
         """Converts a FacebookRequestError to a more specific error exception"""
 
         # check if this is call failed due to an invalid token
-        if FacebookAccessTokenInvalid.can_catch(error):
-            return FacebookAccessTokenInvalid.from_exception(error)
-        if FacebookTransientError.can_catch(error):
-            return FacebookTransientError.from_exception(error)
-        if FacebookCantEditAdsetException.can_catch(error):
-            return FacebookCantEditAdsetException.from_exception(error)
-        if FacebookInsufficientPermissionsForAdCreation.can_catch(error):
-            return FacebookInsufficientPermissionsForAdCreation.from_exception(error)
+        exception_sub_classes = [
+            FacebookAccessTokenInvalid,
+            FacebookTransientError,
+            FacebookCantEditAdsetException,
+            FacebookInsufficientPermissionsForAdCreation,
+            FacebookOopsException,
+            FacebookUnknownError,
+        ]
+        for cls in exception_sub_classes:
+            if cls.can_catch(error):
+                return cls.from_exception(error)
+
         # return the original error if no specific error is found
         return error
 
