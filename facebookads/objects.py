@@ -3040,6 +3040,19 @@ class Interest(CannotCreate, CannotDelete, AbstractCrudObject):
         name = 'name'
 
 
+class FacebookUserAccount(AbstractCrudObject, CannotCreate, CannotDelete, CannotUpdate):
+
+    class Field:
+        id = 'id'
+        name = 'name'
+        category = 'category'
+        perms = 'perms'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'accounts'
+
+
 class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate):
     class Field(object):
         id = 'id'
@@ -3103,6 +3116,9 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
 
     def get_events(self, fields=None, params=None):
         return self.iterate_edge(UserEvents, fields, params)
+
+    def get_accounts(self, fields=None, params=None):
+        return self.iterate_edge(FacebookUserAccount, fields, params)
 
 
 class Friend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
