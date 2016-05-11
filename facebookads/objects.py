@@ -3040,6 +3040,24 @@ class Interest(CannotCreate, CannotDelete, AbstractCrudObject):
         name = 'name'
 
 
+class UserPermission(AbstractCrudObject, CannotCreate, CannotDelete, CannotUpdate):
+
+    class Field:
+        id = 'id'
+        permission = 'permission'
+        status = 'status'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'permissions'
+
+    def get_id(self):
+        return None
+
+    def get_id_assured(self):
+        return None
+
+
 class FacebookUserAccount(AbstractCrudObject, CannotCreate, CannotDelete, CannotUpdate):
 
     class Field:
@@ -3119,6 +3137,9 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
 
     def get_accounts(self, fields=None, params=None):
         return self.iterate_edge(FacebookUserAccount, fields, params)
+
+    def get_permissions(self, fields=None, params=None):
+        return self.iterate_edge(UserPermission, fields, params)
 
 
 class Friend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
