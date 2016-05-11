@@ -91,7 +91,7 @@ class FacebookResponse(object):
         json_body = self.json()
 
         # If the data attribute is HTML and contains error in title, this call failed.
-        if 'data' in json_body and type(json_body['data']) == str:
+        if isinstance(json_body, collections.Mapping) and 'data' in json_body and type(json_body['data']) == str:
             if (json_body['data'].startswith('<!DOCTYPE html>')
                     and '<title>Facebook | Error</title>' in json_body['data']):
                 return False
