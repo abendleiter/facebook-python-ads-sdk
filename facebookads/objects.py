@@ -1447,6 +1447,7 @@ class Ad(HasStatus, CanArchive, HasAdLabels, AbstractCrudObject):
         tracking_specs = 'tracking_specs'
         updated_time = 'updated_time'
         view_tags = 'view_tags'
+        recommendations = 'recommendations'
 
         class Creative(object):
             creative_id = 'creative_id'
