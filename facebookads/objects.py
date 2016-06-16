@@ -1447,6 +1447,7 @@ class Ad(HasStatus, CanArchive, HasAdLabels, AbstractCrudObject):
         tracking_specs = 'tracking_specs'
         updated_time = 'updated_time'
         view_tags = 'view_tags'
+        recommendations = 'recommendations'
 
         class Creative(object):
             creative_id = 'creative_id'
@@ -2976,6 +2977,9 @@ class PublicPage(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
         emails = 'emails'
         phone = 'phone'
 
+    def get_likes(self, fields=None, params=None):
+        return self.iterate_edge(Like, fields, params)
+
 
 class UserPagePermission(AbstractCrudObject):
     class Field(object):
@@ -3140,6 +3144,9 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
 
     def get_permissions(self, fields=None, params=None):
         return self.iterate_edge(UserPermission, fields, params)
+
+    def get_likes(self, fields=None, params=None):
+        return self.iterate_edge(Like, fields, params)
 
 
 class Friend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
@@ -3445,3 +3452,10 @@ class AsyncJob(CannotCreate, AbstractCrudObject):
 
     def __nonzero__(self):
         return self[self.Field.async_percent_completion] == 100
+
+
+class Like(PublicPage):
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'likes'
