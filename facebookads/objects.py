@@ -1363,6 +1363,7 @@ class AdSet(CanValidate, HasStatus, CanArchive, HasAdLabels,
         targeting = 'targeting'
         updated_time = 'updated_time'
         lifetime_frequency_cap = 'lifetime_frequency_cap'
+        recommendations = 'recommendations'
 
     class BillingEvent(object):
         app_installs = 'APP_INSTALLS'
