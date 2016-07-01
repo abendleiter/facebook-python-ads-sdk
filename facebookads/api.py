@@ -21,7 +21,14 @@
 """
 api module contains classes that make http requests to Facebook's graph API.
 """
-from http.client import BadStatusLine
+
+import collections
+import json
+import re
+
+import six
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from six.moves import http_client
 
 from facebookads.exceptions import (
     FacebookRequestError,
@@ -32,16 +39,13 @@ from facebookads.exceptions import (
     FacebookInsufficientPermissionsForAdCreation,
     FacebookOopsException,
     FacebookUnknownError,
-)
+    FacebookAccessTokenInvalidNoAppPermission,
+    FacebookAccessTokenInvalidTokenExpired, zalidUnconfirmedUser,
+    FacebookAccessTokenInvalidSessionInvalid, FacebookAccessTokenInvalidPasswordChanged,
+    FacebookAccessTokenInvalidUnconfirmedUser)
 from facebookads.session import FacebookSession
 from facebookads.utils import urls
 from facebookads.utils import version
-import json
-import six
-import collections
-import re
-from six.moves import http_client
-from requests.exceptions import ConnectionError as RequestsConnectionError
 
 
 class FacebookResponse(object):
@@ -123,6 +127,11 @@ class FacebookResponse(object):
 
         # check if this is call failed due to an invalid token
         exception_sub_classes = [
+            FacebookAccessTokenInvalidNoAppPermission,
+            FacebookAccessTokenInvalidTokenExpired,
+            FacebookAccessTokenInvalidUnconfirmedUser,
+            FacebookAccessTokenInvalidSessionInvalid,
+            FacebookAccessTokenInvalidPasswordChanged,
             FacebookAccessTokenInvalid,
             FacebookTransientError,
             FacebookCantEditAdsetException,
