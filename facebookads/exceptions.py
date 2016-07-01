@@ -201,10 +201,18 @@ class FacebookRequestSubError(FacebookRequestError):
     SUBCODES = ()  # all subcodes this error should be able to fetch
 
     @classmethod
+    def get_subcodes(cls):
+        return cls.SUBCODES
+
+    @classmethod
+    def get_error_code(cls):
+        return cls.ERROR_CODE
+
+    @classmethod
     def can_catch(cls, exception):
         return (
-            exception.api_error_code() == cls.ERROR_CODE and
-            exception.api_error_subcode() in cls.SUBCODES
+            exception.api_error_code() == cls.get_error_code() and
+            exception.api_error_subcode() in cls.get_subcodes()
         )
 
 
@@ -237,20 +245,49 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
     ERROR_CODE = 190  # general error code for token related errors
 
     SUBCODE_MALFORMED_TOKEN = None
+    SUBCODE_USER_CHECKPOINTED = 459  # user needs to login at Facebook to fix this issue
     SUBCODE_PASSWORD_CHANGED = 460   # user changed password, so the token is no longer valid
     SUBCODE_NO_APP_PERMISSION = 458  # user did not grand permission for this app
     SUBCODE_TOKEN_EXPIRED = 463      # user access token expired
     SUBCODE_UNCONFIRMED_USER = 464   # user is not a confirmed user
     SUBCODE_SESSION_INVALID = 461    # invalid session
+    SUBCODE_INVALID_TOKEN = 467      # invalid access token
 
-    SUBCODES = (
-        SUBCODE_MALFORMED_TOKEN,
-        SUBCODE_PASSWORD_CHANGED,
-        SUBCODE_NO_APP_PERMISSION,
-        SUBCODE_TOKEN_EXPIRED,
-        SUBCODE_UNCONFIRMED_USER,
-        SUBCODE_SESSION_INVALID,
-    )
+    SUBCODES = (SUBCODE_INVALID_TOKEN, SUBCODE_MALFORMED_TOKEN)
+
+    @classmethod
+    def get_error_code(cls):
+        return cls.ERROR_CODE
+
+
+class FacebookAccessTokenInvalidNoAppPermission(FacebookAccessTokenInvalid):
+    @classmethod
+    def get_subcodes(cls):
+        return [cls.SUBCODE_NO_APP_PERMISSION]
+
+
+class FacebookAccessTokenInvalidTokenExpired(FacebookAccessTokenInvalid):
+    @classmethod
+    def get_subcodes(cls):
+        return [cls.SUBCODE_TOKEN_EXPIRED]
+
+
+class FacebookAccessTokenInvalidUnconfirmedUser(FacebookAccessTokenInvalid):
+    @classmethod
+    def get_subcodes(cls):
+        return [cls.SUBCODE_UNCONFIRMED_USER]
+
+
+class FacebookAccessTokenInvalidSessionInvalid(FacebookAccessTokenInvalid):
+    @classmethod
+    def get_subcodes(cls):
+        return [cls.SUBCODE_SESSION_INVALID]
+
+
+class FacebookAccessTokenInvalidPasswordChanged(FacebookAccessTokenInvalid):
+    @classmethod
+    def get_subcodes(cls):
+        return [cls.SUBCODE_PASSWORD_CHANGED]
 
 
 class FacebookBadObjectError(FacebookError):
