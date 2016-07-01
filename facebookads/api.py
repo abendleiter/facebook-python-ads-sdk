@@ -40,7 +40,7 @@ from facebookads.exceptions import (
     FacebookOopsException,
     FacebookUnknownError,
     FacebookAccessTokenInvalidNoAppPermission,
-    FacebookAccessTokenInvalidTokenExpired, zalidUnconfirmedUser,
+    FacebookAccessTokenInvalidTokenExpired,
     FacebookAccessTokenInvalidSessionInvalid, FacebookAccessTokenInvalidPasswordChanged,
     FacebookAccessTokenInvalidUnconfirmedUser)
 from facebookads.session import FacebookSession
