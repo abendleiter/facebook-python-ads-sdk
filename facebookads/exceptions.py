@@ -63,6 +63,7 @@ class FacebookRequestError(FacebookError):
         self._api_error_type = None
         self._api_error_message = None
         self._api_blame_field_specs = None
+        self._api_transient_error = False
 
         if self._body and isinstance(self._body, dict) and 'error' in self._body:
             self._error = self._body['error']
@@ -70,6 +71,8 @@ class FacebookRequestError(FacebookError):
                 self._api_error_message = self._error['message']
             if 'code' in self._error:
                 self._api_error_code = self._error['code']
+            if 'is_transient' in self._error:
+                self._api_transient_error = self._error['is_transient']
             if 'error_subcode' in self._error:
                 self._api_error_subcode = self._error['error_subcode']
             if 'type' in self._error:
@@ -130,7 +133,13 @@ class FacebookRequestError(FacebookError):
     def api_blame_field_specs(self):
         return self._api_blame_field_specs
 
-    @property
+    def api_transient_error(self):
+        return self._api_transient_error
+
+    def get_message(self):
+        return self._message
+
+   @property
     def _sentry_data(self):
         # AB-477 Make FacebookRequestErrors easier to tell apart
         tags = {}
@@ -294,6 +303,9 @@ class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
     pass
 
+class FacebookBadParameterError(FacebookError):
+    """Raised when a guarantee about the parameter validity fails."""
+    pass
 
 class FacebookUnavailablePropertyException(FacebookError):
     """Raised when an object's property or method is not available."""
@@ -370,3 +382,14 @@ class FacebookUnknownError(FacebookRequestSubError):
             exception.api_error_code == 1 and
             exception.api_error_message() == 'An unknown error occurred'
         )
+class DocsmithSkipTestError(Exception):
+    """Raised when a docsmith test is skipped."""
+    def __init__(self, message):
+        self._message = message
+
+    def get_skip_error_msg(self):
+        return self._message
+
+class FacebookBadParameterTypeException(FacebookError):
+    """Raised when a parameter or field is set with improper type."""
+    pass
