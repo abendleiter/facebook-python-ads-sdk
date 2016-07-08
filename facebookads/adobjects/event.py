@@ -21,8 +21,43 @@
 from facebookads.adobjects.abstractobject import AbstractObject
 from facebookads.adobjects.abstractcrudobject import AbstractCrudObject
 from facebookads.adobjects.objectparser import ObjectParser
+from facebookads.adobjects.facebookuser import FacebookUser
 from facebookads.api import FacebookRequest
 from facebookads.typechecker import TypeChecker
+from facebookads.mixins import (
+    CannotCreate,
+    CannotDelete,
+    CannotUpdate,
+)
+
+class RSVP(AbstractCrudObject, CannotDelete, CannotUpdate):
+    class Field(FacebookUser.Field):
+        pass
+
+
+class RSVPDeclined(RSVP):
+    @classmethod
+    def get_endpoint(cls):
+        return 'declined'
+
+
+class RSVPAttending(RSVP):
+    @classmethod
+    def get_endpoint(cls):
+        return 'attending'
+
+
+class RSVPMaybe(RSVP):
+    @classmethod
+    def get_endpoint(cls):
+        return 'maybe'
+
+
+class RSVPNoReply(RSVP):
+    @classmethod
+    def get_endpoint(cls):
+        return 'noreply'
+
 
 """
 This class is auto-generated.
@@ -31,6 +66,7 @@ For any issues or feature requests related to this class, please let us know on
 github and we'll fix in our codegen framework. We'll not be able to accept
 pull request for this class.
 """
+
 
 class Event(
     AbstractCrudObject,
@@ -158,3 +194,40 @@ class Event(
         field_enum_info['Category'] = Event.Category.__dict__.values()
         field_enum_info['Type'] = Event.Type.__dict__.values()
         return field_enum_info
+
+    def attend(self):
+        rsvp = RSVPAttending(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def maybe(self):
+        rsvp = RSVPMaybe(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def decline(self):
+        rsvp = RSVPDeclined(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def noreply(self):
+        rsvp = RSVPNoReply(parent_id=self.get_id_assured(), api=self.get_api())
+        rsvp.remote_create()
+
+    def get_rsvp_declined(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPDeclined, fields, params, maximum_results=maximum_results)
+
+    def get_rsvp_attending(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPAttending, fields, params, maximum_results=maximum_results)
+
+    def get_rsvp_maybe(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPMaybe, fields, params, maximum_results=maximum_results)
+
+    def get_rsvp_noreply(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(RSVPNoReply, fields, params, maximum_results=maximum_results)
+
+
+class UserEvents(AbstractCrudObject):
+    @classmethod
+    def get_endpoint(cls):
+        return 'events'
+
+    class Field(Event.Field):
+        rsvp_status = 'rsvp_status'

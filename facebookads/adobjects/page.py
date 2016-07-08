@@ -29,16 +29,74 @@ from facebookads.mixins import (
     CannotUpdate,
 )
 
-class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
-
+class UserPagePermission(AbstractCrudObject):
     class Field(object):
+        role = 'role'
+        business = 'business'
+        user = 'user'
+        id = 'id'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'userpermissions'
+
+    def get_node_path(self):
+        return (self.get_parent_id_assured(), self.get_endpoint())
+
+
+class PageEvents(AbstractCrudObject):
+    @classmethod
+    def get_endpoint(cls):
+        return 'events'
+
+
+class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
+    class CommonField(object):
+        category = 'category'
         id = 'id'
         name = 'name'
+
+    class PublicOnlyField(object):
+        # public fields
+        about = 'about'
         category = 'category'
-        access_token = 'access_token'
+        checkins = 'checkins'
+        country_page_likes = 'country_page_likes'
+        cover = 'cover'
+        description = 'description'
+        emails = 'emails'
+        has_added_app = 'has_added_app'
+        is_community_page = 'is_community_page'
+        is_published = 'is_published'
+        likes = 'likes'
+        link = 'link'
         location = 'location'
-        website = 'website'
+        new_like_count = 'new_like_count'
         phone = 'phone'
+        talking_about_count = 'talking_about_count'
+        username = 'username'
+        website = 'website'
+        were_here_count = 'were_here_count'
+
+    class AdminOnlyField(object):
+        access_status = 'access_status'
+        access_type = 'access_type'
+        category_list = 'category_list'
+        permitted_roles = 'permitted_roles'
+
+    class PublicField(CommonField, PublicOnlyField):
+        pass
+
+    class AdminField(CommonField, AdminOnlyField):
+        class PermittedRoles(object):
+            advertiser = 'ADVERTISER'
+            content_creator = 'CONTENT_CREATOR'
+            insights_analyst = 'INSIGHTS_ANALYST'
+            manager = 'MANAGER'
+            moderator = 'MODERATOR'
+
+    class Field(PublicField, AdminField):
+        pass
 
     class Location(object):
         city = 'city'
@@ -57,3 +115,26 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
         Returns all leadgen forms on the page
         """
         return self.iterate_edge(LeadgenForm, fields, params, endpoint='leadgen_forms')
+
+    def get_likes(self, fields=None, params=None):
+        return self.iterate_edge(Like, fields, params)
+
+    def get_events(self, fields=None, params=None):
+        return self.iterate_edge(PageEvents, fields, params)
+
+    def get_user_permissions(self, fields=None, params=None):
+        return self.iterate_edge(UserPagePermission, fields, params)
+
+    def add_user_permission(self, user_id, business_id, role):
+        permission = UserPagePermission(parent_id=self.get_id_assured(), api=self.get_api())
+        permission.remote_create(params={'user': user_id, 'business': business_id, 'role': role})
+
+    def remove_user_permission(self, user_id, business_id):
+        request = FacebookRequest(
+            node_id=self.get_id_assured(),
+            method='DELETE',
+            endpoint=UserPagePermission.get_endpoint(),
+            api=self.get_api(),
+        )
+        request.add_params({'user': user_id, 'business': business_id})
+        request.execute()

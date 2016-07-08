@@ -53,10 +53,12 @@ class AdSet(
         campaign = 'campaign'
         campaign_id = 'campaign_id'
         configured_status = 'configured_status'
+        configured_status = 'configured_status'  # used for reading
+        status = 'status'  # used for writing  # legacy: can be removed when removed from fbobjs
         created_time = 'created_time'
         creative_sequence = 'creative_sequence'
         daily_budget = 'daily_budget'
-        effective_status = 'effective_status'
+        effective_status = 'effective_status'  # used for reading
         end_time = 'end_time'
         frequency_cap = 'frequency_cap'
         frequency_cap_reset_period = 'frequency_cap_reset_period'
@@ -81,6 +83,9 @@ class AdSet(
         daily_imps = 'daily_imps'
         execution_options = 'execution_options'
         redownload = 'redownload'
+        lifetime_frequency_cap = 'lifetime_frequency_cap'
+        recommendations = 'recommendations'
+
 
     class BillingEvent:
         app_installs = 'APP_INSTALLS'
@@ -91,6 +96,7 @@ class AdSet(
         page_likes = 'PAGE_LIKES'
         post_engagement = 'POST_ENGAGEMENT'
         video_views = 'VIDEO_VIEWS'
+        none = 'NONE'  # legacy, can be removed when removed in fbobj
 
     class ConfiguredStatus:
         active = 'ACTIVE'

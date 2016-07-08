@@ -22,6 +22,7 @@ from facebookads.exceptions import (
     FacebookBadObjectError,
 )
 from facebookads.adobjects.abstractobject import AbstractObject
+import collections.abc
 
 class ObjectParser:
     """
@@ -53,10 +54,17 @@ class ObjectParser:
         self._custom_parse_method = custom_parse_method
         self._api = api
 
+    @classmethod
+    def assure_response_valid(cls, data):
+        if not (isinstance(data, collections.abc.MutableMapping) or isinstance(data, collections.abc.MutableSequence)):
+            raise FacebookBadObjectError(
+                'Retrieved data is not a subclass of MutableMapping or MutableSequence: %s' % data
+            )
+
     def parse_single(self, response):
         if self._custom_parse_method is not None:
             return self._custom_parse_method(response, self._api)
-
+        self.__class__.assure_response_valid(response)
         data = response
         if 'data' in response:
             data = response['data']
@@ -83,6 +91,7 @@ class ObjectParser:
                 'or custom parse method for parser')
 
     def parse_multiple(self, response):
+        self.__class__.assure_response_valid(response)
         if 'data' in response and isinstance(response['data'], list):
             ret = []
             if isinstance(response['data'], list):

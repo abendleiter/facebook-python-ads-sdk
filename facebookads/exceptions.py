@@ -139,7 +139,7 @@ class FacebookRequestError(FacebookError):
     def get_message(self):
         return self._message
 
-   @property
+    @property
     def _sentry_data(self):
         # AB-477 Make FacebookRequestErrors easier to tell apart
         tags = {}

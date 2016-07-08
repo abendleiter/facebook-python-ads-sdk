@@ -548,3 +548,56 @@ class AdPlacePageSet(adplacepageset.AdPlacePageSet):
 
 class CustomConversion(customconversion.CustomConversion):
     pass
+
+#
+# Custom backwards compatibility mappings for abend:
+#
+from facebookads.adobjects import (
+    event,
+    facebookuser,
+    facebookuseraccount,
+    interest,
+    oauthaccesstoken,
+    page,
+    userevents,
+    userpermission,
+)
+
+class OAuthAccessToken(oauthaccesstoken.OAuthAccessToken):
+    pass
+
+
+class Interest(interest.Interest):
+    pass
+
+
+class UserPermission(userpermission.UserPermission):
+    pass
+
+
+class PublicPage(page.Page):  # for legacy compat with fbobjs
+    pass
+
+
+class FacebookUserAccount(facebookuseraccount.FacebookUserAccount):
+    pass
+
+
+class FacebookUser(facebookuser.FacebookUser):
+    pass
+
+
+class Friend(facebookuser.Friend):
+    pass
+
+
+class TaggableFriend(facebookuser.TaggableFriend):
+    pass
+
+
+class UserEvents(userevents.UserEvents):
+    pass
+
+
+class Event(event.Event):
+    pass
