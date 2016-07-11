@@ -25,6 +25,7 @@ raised by the sdk.
 
 import json
 import re
+import collections.abc
 
 
 class FacebookError(Exception):
@@ -194,7 +195,7 @@ class FacebookBadResponseError(FacebookRequestError):
     def check_bad_response(cls, facebook_response):
         # AB-477: response body is not a JSON object (but possibly an HTML error page)
         # AB-1107: generalized FacebookBadResponseError for AbstractCrudObject.remote_read
-        if not isinstance(facebook_response.json(), dict):
+        if not isinstance(facebook_response.json(), collections.abc.MutableMapping):
             raise FacebookBadResponseError(
                 "API call did not return a JSON object",
                 facebook_response._call,

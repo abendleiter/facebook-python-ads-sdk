@@ -561,6 +561,7 @@ from facebookads.adobjects import (
     page,
     userevents,
     userpermission,
+    businessmanager,
 )
 
 class OAuthAccessToken(oauthaccesstoken.OAuthAccessToken):
@@ -576,6 +577,10 @@ class UserPermission(userpermission.UserPermission):
 
 
 class PublicPage(page.Page):  # for legacy compat with fbobjs
+    pass
+
+
+class UserPagePermission(page.UserPagePermission):
     pass
 
 
@@ -600,4 +605,8 @@ class UserEvents(userevents.UserEvents):
 
 
 class Event(event.Event):
+    pass
+
+
+class BusinessManager(businessmanager.BusinessManager):
     pass

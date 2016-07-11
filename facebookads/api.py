@@ -31,6 +31,7 @@ from six.moves import http_client
 
 from facebookads.exceptions import (
     FacebookRequestError,
+    FacebookBadResponseError,
     FacebookBadObjectError,
     FacebookUnavailablePropertyException,
     FacebookBadParameterError,
@@ -121,18 +122,15 @@ class FacebookResponse(object):
         if isinstance(json_body, collections.Mapping) and 'error' in json_body:
             # Is a dictionary, has error in it
             return False
-        elif bool(json_body):
+        elif bool(json_body) and isinstance(json_body, collections.Mapping) and 'success' in json_body:
             # Has body and no error
-            if isinstance(json_body, collections.Mapping) and 'success' in json_body:
-                return json_body['success']
-            # API can retuen a success 200 when service unavailable occurs
-            return 'Service Unavailable' not in json_body
+             return json_body['success']
         elif self._http_status == http_client.NOT_MODIFIED:
             # ETAG Hit
             return True
         elif self._http_status == http_client.OK:
-            # HTTP Okay
-            return True
+            # API can return a success 200 when service unavailable occurs
+            return not 'Service Unavailable' in json_body
         else:
             # Something else
             return False
@@ -719,6 +717,7 @@ class FacebookRequest:
                 files=files,
                 api_version=self._api_version,
             )
+            FacebookBadResponseError.check_bad_response(response)
             if response.error():
                 raise response.error()
             if self._response_parser:
@@ -847,11 +846,13 @@ class Cursor(object):
             if 'summary' not in self.params:
                 self.params['summary'] = True
 
-        response = self._api.call(
+        response_obj = self._api.call(
             'GET',
             self._path,
             params=self.params,
-        ).json()
+        )
+        FacebookBadResponseError.check_bad_response(response_obj)
+        response = response_obj.json()
 
         if 'paging' in response and 'next' in response['paging']:
             self._path = response['paging']['next']
