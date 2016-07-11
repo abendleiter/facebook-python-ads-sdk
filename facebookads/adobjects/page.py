@@ -108,7 +108,7 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
 
     @classmethod
     def get_endpoint(cls):
-        return 'accounts'
+        return 'pages'
 
     def get_leadgen_forms(self, fields=None, params=None):
         """
