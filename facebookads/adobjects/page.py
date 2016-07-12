@@ -65,6 +65,7 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
         cover = 'cover'
         description = 'description'
         emails = 'emails'
+        fan_count = 'fan_count'
         has_added_app = 'has_added_app'
         is_community_page = 'is_community_page'
         is_published = 'is_published'
