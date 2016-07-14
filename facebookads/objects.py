@@ -610,3 +610,8 @@ class Event(event.Event):
 
 class BusinessManager(businessmanager.BusinessManager):
     pass
+
+
+class BusinessManagerPage(page.BusinessManagerPage):
+    pass
+

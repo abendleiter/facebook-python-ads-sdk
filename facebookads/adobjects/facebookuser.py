@@ -1,7 +1,6 @@
 from facebookads.adobjects.abstractcrudobject import AbstractCrudObject
 from facebookads.adobjects.facebookuseraccount import FacebookUserAccount
 from facebookads.adobjects.userpermission import UserPermission
-from facebookads.adobjects.like import Like
 from facebookads.mixins import (
     CannotCreate,
     CannotDelete,
@@ -81,7 +80,9 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
         return self.iterate_edge(UserPermission, fields, params)
 
     def get_likes(self, fields=None, params=None):
-        return self.iterate_edge(Like, fields, params)
+        from facebookads.adobjects.page import Page
+        return self.iterate_edge(Page, fields, params, endpoint='likes')
+
 
 class Friend(AbstractCrudObject, CannotCreate, CannotUpdate, CannotDelete):
     class Field(FacebookUser.Field):

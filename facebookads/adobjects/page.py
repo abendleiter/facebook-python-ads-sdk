@@ -29,6 +29,7 @@ from facebookads.mixins import (
     CannotUpdate,
 )
 
+
 class UserPagePermission(AbstractCrudObject):
     class Field(object):
         role = 'role'
@@ -44,13 +45,7 @@ class UserPagePermission(AbstractCrudObject):
         return (self.get_parent_id_assured(), self.get_endpoint())
 
 
-class PageEvents(AbstractCrudObject):
-    @classmethod
-    def get_endpoint(cls):
-        return 'events'
-
-
-class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
+class AbstractPage(AbstractCrudObject):
     class CommonField(object):
         category = 'category'
         id = 'id'
@@ -111,6 +106,11 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
     def get_endpoint(cls):
         return 'pages'
 
+
+class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractPage):
+    class Field(AbstractPage.PublicField):
+        pass
+
     def get_leadgen_forms(self, fields=None, params=None):
         """
         Returns all leadgen forms on the page
@@ -118,10 +118,27 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
         return self.iterate_edge(LeadgenForm, fields, params, endpoint='leadgen_forms')
 
     def get_likes(self, fields=None, params=None):
-        return self.iterate_edge(Like, fields, params)
+        return self.iterate_edge(self.__class__, fields, params, endpoint='likes')
 
     def get_events(self, fields=None, params=None):
-        return self.iterate_edge(PageEvents, fields, params)
+        from facebookads.adobjects.event import Event
+        return self.iterate_edge(Event, fields, params, endpoint='events')
+
+
+class BusinessManagerPage(AbstractPage):
+
+    class Field(AbstractPage.CommonField, AbstractPage.AdminOnlyField):
+        pass
+
+    def cancel_page_permission_request(self):
+        request = FacebookRequest(
+            node_id=self.get_parent_id_assured(),
+            endpoint=self.get_endpoint(),
+            api=self.get_api(),
+            method='DELETE',
+        )
+        request.add_params({'page_id': self.get_id_assured()})
+        request.execute()
 
     def get_user_permissions(self, fields=None, params=None):
         return self.iterate_edge(UserPagePermission, fields, params)
