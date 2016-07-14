@@ -45,7 +45,7 @@ class UserPagePermission(AbstractCrudObject):
         return (self.get_parent_id_assured(), self.get_endpoint())
 
 
-class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
+class AbstractPage(AbstractCrudObject):
     class CommonField(object):
         category = 'category'
         id = 'id'
@@ -106,6 +106,11 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
     def get_endpoint(cls):
         return 'pages'
 
+
+class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractPage):
+    class Field(AbstractPage.PublicField):
+        pass
+
     def get_leadgen_forms(self, fields=None, params=None):
         """
         Returns all leadgen forms on the page
@@ -118,6 +123,12 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
     def get_events(self, fields=None, params=None):
         from facebookads.adobjects.event import Event
         return self.iterate_edge(Event, fields, params, endpoint='events')
+
+
+class BusinessManagerPage(AbstractPage):
+
+    class Field(AbstractPage.CommonField, AbstractPage.AdminOnlyField):
+        pass
 
     def get_user_permissions(self, fields=None, params=None):
         return self.iterate_edge(UserPagePermission, fields, params)
