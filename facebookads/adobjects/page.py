@@ -29,6 +29,7 @@ from facebookads.mixins import (
     CannotUpdate,
 )
 
+
 class UserPagePermission(AbstractCrudObject):
     class Field(object):
         role = 'role'
@@ -42,12 +43,6 @@ class UserPagePermission(AbstractCrudObject):
 
     def get_node_path(self):
         return (self.get_parent_id_assured(), self.get_endpoint())
-
-
-class PageEvents(AbstractCrudObject):
-    @classmethod
-    def get_endpoint(cls):
-        return 'events'
 
 
 class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
@@ -118,10 +113,11 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractCrudObject):
         return self.iterate_edge(LeadgenForm, fields, params, endpoint='leadgen_forms')
 
     def get_likes(self, fields=None, params=None):
-        return self.iterate_edge(Like, fields, params)
+        return self.iterate_edge(self.__class__, fields, params, endpoint='likes')
 
     def get_events(self, fields=None, params=None):
-        return self.iterate_edge(PageEvents, fields, params)
+        from facebookads.adobjects.event import Event
+        return self.iterate_edge(Event, fields, params, endpoint='events')
 
     def get_user_permissions(self, fields=None, params=None):
         return self.iterate_edge(UserPagePermission, fields, params)
