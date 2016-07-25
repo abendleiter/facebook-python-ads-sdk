@@ -270,6 +270,12 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
         return cls.ERROR_CODE
 
 
+class FacebookAccessTokenInvalidUserCheckpointed(FacebookAccessTokenInvalid):
+    @classmethod
+    def get_subcodes(cls):
+        return [cls.SUBCODE_USER_CHECKPOINTED]
+
+
 class FacebookAccessTokenInvalidNoAppPermission(FacebookAccessTokenInvalid):
     @classmethod
     def get_subcodes(cls):
