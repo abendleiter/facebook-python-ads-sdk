@@ -262,6 +262,7 @@ class FacebookAccessTokenInvalid(FacebookRequestSubError):
     SUBCODE_UNCONFIRMED_USER = 464   # user is not a confirmed user
     SUBCODE_SESSION_INVALID = 461    # invalid session
     SUBCODE_INVALID_TOKEN = 467      # invalid access token
+    SUBCODE_USER_IN_BLOCKED_LOGGED_IN_CHECKPOINT = 490  # user is enrolled in a blocking checkpoint"
 
     SUBCODES = (SUBCODE_INVALID_TOKEN, SUBCODE_MALFORMED_TOKEN)
 
