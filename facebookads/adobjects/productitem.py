@@ -50,6 +50,7 @@ class ProductItem(
         color = 'color'
         commerce_insights = 'commerce_insights'
         condition = 'condition'
+        currency = 'currency'
         custom_data = 'custom_data'
         custom_label_0 = 'custom_label_0'
         custom_label_1 = 'custom_label_1'
@@ -88,7 +89,6 @@ class ProductItem(
         android_package = 'android_package'
         android_url = 'android_url'
         checkout_url = 'checkout_url'
-        currency = 'currency'
         inventory = 'inventory'
         ios_app_name = 'ios_app_name'
         ios_app_store_id = 'ios_app_store_id'
@@ -297,7 +297,6 @@ class ProductItem(
 
     def api_delete(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
-            'id': 'string',
         }
         enums = {
         }
@@ -325,6 +324,8 @@ class ProductItem(
 
     def api_get(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
+            'image_height': 'unsigned int',
+            'image_width': 'unsigned int',
         }
         enums = {
         }
@@ -374,7 +375,6 @@ class ProductItem(
             'expiration_date': 'string',
             'gender': 'gender_enum',
             'gtin': 'string',
-            'id': 'string',
             'image_url': 'string',
             'inventory': 'unsigned int',
             'ios_app_name': 'string',
@@ -415,7 +415,7 @@ class ProductItem(
             endpoint='/',
             api=self._api,
             param_checker=TypeChecker(param_types, enums),
-            target_class=AbstractCrudObject,
+            target_class=ProductItem,
             api_type='NODE',
             response_parser=ObjectParser(reuse_object=self),
         )
@@ -469,6 +469,7 @@ class ProductItem(
         'color': 'string',
         'commerce_insights': 'ProductItemCommerceInsights',
         'condition': 'Condition',
+        'currency': 'string',
         'custom_data': 'list<Object>',
         'custom_label_0': 'string',
         'custom_label_1': 'string',
@@ -491,7 +492,7 @@ class ProductItem(
         'product_type': 'string',
         'retailer_id': 'string',
         'retailer_product_group_id': 'string',
-        'review_rejection_reasons': 'ReviewRejectionReasons',
+        'review_rejection_reasons': 'list<string>',
         'review_status': 'ReviewStatus',
         'sale_price': 'string',
         'sale_price_end_date': 'string',
@@ -507,7 +508,6 @@ class ProductItem(
         'android_package': 'string',
         'android_url': 'string',
         'checkout_url': 'string',
-        'currency': 'string',
         'inventory': 'unsigned int',
         'ios_app_name': 'string',
         'ios_app_store_id': 'unsigned int',
@@ -533,5 +533,4 @@ class ProductItem(
         field_enum_info['ReviewStatus'] = ProductItem.ReviewStatus.__dict__.values()
         field_enum_info['ShippingWeightUnit'] = ProductItem.ShippingWeightUnit.__dict__.values()
         field_enum_info['Visibility'] = ProductItem.Visibility.__dict__.values()
-        field_enum_info['ReviewRejectionReasons'] = ProductItem.ReviewRejectionReasons.__dict__.values()
         return field_enum_info

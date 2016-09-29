@@ -58,6 +58,8 @@ class RSVPNoReply(RSVP):
     def get_endpoint(cls):
         return 'noreply'
 
+from facebookads.api import FacebookRequest
+from facebookads.typechecker import TypeChecker
 
 """
 This class is auto-generated.
@@ -66,7 +68,6 @@ For any issues or feature requests related to this class, please let us know on
 github and we'll fix in our codegen framework. We'll not be able to accept
 pull request for this class.
 """
-
 
 class Event(
     AbstractCrudObject,
@@ -87,6 +88,7 @@ class Event(
         guest_list_enabled = 'guest_list_enabled'
         id = 'id'
         interested_count = 'interested_count'
+        is_canceled = 'is_canceled'
         is_page_owned = 'is_page_owned'
         is_viewer_admin = 'is_viewer_admin'
         maybe_count = 'maybe_count'
@@ -162,10 +164,43 @@ class Event(
             self.assure_call()
             return request.execute()
 
+    def get_picture(self, fields=None, params=None, batch=None, pending=False):
+        from facebookads.adobjects.profilepicturesource import ProfilePictureSource
+        param_types = {
+            'height': 'int',
+            'redirect': 'bool',
+            'type': 'type_enum',
+            'width': 'int',
+        }
+        enums = {
+            'type_enum': ProfilePictureSource.Type.__dict__.values(),
+        }
+        request = FacebookRequest(
+            node_id=self['id'],
+            method='GET',
+            endpoint='/picture',
+            api=self._api,
+            param_checker=TypeChecker(param_types, enums),
+            target_class=ProfilePictureSource,
+            api_type='EDGE',
+            response_parser=ObjectParser(target_class=ProfilePictureSource),
+        )
+        request.add_params(params)
+        request.add_fields(fields)
+
+        if batch is not None:
+            request.add_to_batch(batch)
+            return request
+        elif pending:
+            return request
+        else:
+            self.assure_call()
+            return request.execute()
+
     _field_types = {
         'attending_count': 'int',
         'can_guests_invite': 'bool',
-        'category': 'Category',
+        'category': 'string',
         'cover': 'Object',
         'declined_count': 'int',
         'description': 'string',
@@ -173,6 +208,7 @@ class Event(
         'guest_list_enabled': 'bool',
         'id': 'string',
         'interested_count': 'int',
+        'is_canceled': 'bool',
         'is_page_owned': 'bool',
         'is_viewer_admin': 'bool',
         'maybe_count': 'int',
@@ -184,7 +220,7 @@ class Event(
         'start_time': 'string',
         'ticket_uri': 'string',
         'timezone': 'string',
-        'type': 'Type',
+        'type': 'string',
         'updated_time': 'datetime',
     }
 

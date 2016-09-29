@@ -28,38 +28,38 @@ github and we'll fix in our codegen framework. We'll not be able to accept
 pull request for this class.
 """
 
-class TargetingGeoLocation(
+class AdCreativeLinkDataCallToActionValue(
     AbstractObject,
 ):
 
     def __init__(self, api=None):
-        super(TargetingGeoLocation, self).__init__()
-        self._isTargetingGeoLocation = True
+        super(AdCreativeLinkDataCallToActionValue, self).__init__()
+        self._isAdCreativeLinkDataCallToActionValue = True
         self._api = api
 
     class Field(AbstractObject.Field):
-        cities = 'cities'
-        countries = 'countries'
-        country_groups = 'country_groups'
-        custom_locations = 'custom_locations'
-        electoral_districts = 'electoral_districts'
-        geo_markets = 'geo_markets'
-        location_types = 'location_types'
-        places = 'places'
-        regions = 'regions'
-        zips = 'zips'
+        app_link = 'app_link'
+        application = 'application'
+        event_id = 'event_id'
+        lead_gen_form_id = 'lead_gen_form_id'
+        link = 'link'
+        link_caption = 'link_caption'
+        link_description = 'link_description'
+        link_title = 'link_title'
+        page = 'page'
+        product_link = 'product_link'
 
     _field_types = {
-        'cities': 'list<TargetingGeoLocationCity>',
-        'countries': 'list<string>',
-        'country_groups': 'list<string>',
-        'custom_locations': 'list<TargetingGeoLocationCustomLocation>',
-        'electoral_districts': 'list<TargetingGeoLocationElectoralDistrict>',
-        'geo_markets': 'list<TargetingGeoLocationMarket>',
-        'location_types': 'list<string>',
-        'places': 'list<TargetingGeoLocationPlace>',
-        'regions': 'list<TargetingGeoLocationRegion>',
-        'zips': 'list<TargetingGeoLocationZip>',
+        'app_link': 'string',
+        'application': 'string',
+        'event_id': 'string',
+        'lead_gen_form_id': 'string',
+        'link': 'string',
+        'link_caption': 'string',
+        'link_description': 'string',
+        'link_title': 'string',
+        'page': 'string',
+        'product_link': 'string',
     }
 
     @classmethod

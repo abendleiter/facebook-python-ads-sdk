@@ -22,7 +22,6 @@ from facebookads.exceptions import (
     FacebookBadObjectError,
 )
 from facebookads.adobjects.abstractobject import AbstractObject
-import collections.abc
 
 class ObjectParser:
     """

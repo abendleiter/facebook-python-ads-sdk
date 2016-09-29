@@ -18,12 +18,43 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from facebookads.session import FacebookSession
-from facebookads.api import FacebookAdsApi
+from facebookads.adobjects.abstractobject import AbstractObject
 
-__version__ = '2.7.1.1'
-__all__ = [
-    'session',
-    'objects',
-    'api',
-]
+"""
+This class is auto-generated.
+
+For any issues or feature requests related to this class, please let us know on
+github and we'll fix in our codegen framework. We'll not be able to accept
+pull request for this class.
+"""
+
+class AdCreativePlaceData(
+    AbstractObject,
+):
+
+    def __init__(self, api=None):
+        super(AdCreativePlaceData, self).__init__()
+        self._isAdCreativePlaceData = True
+        self._api = api
+
+    class Field(AbstractObject.Field):
+        address_string = 'address_string'
+        label = 'label'
+        latitude = 'latitude'
+        longitude = 'longitude'
+        phone_number = 'phone_number'
+        type = 'type'
+
+    _field_types = {
+        'address_string': 'string',
+        'label': 'string',
+        'latitude': 'float',
+        'longitude': 'float',
+        'phone_number': 'string',
+        'type': 'string',
+    }
+
+    @classmethod
+    def _get_field_enum_info(cls):
+        field_enum_info = {}
+        return field_enum_info

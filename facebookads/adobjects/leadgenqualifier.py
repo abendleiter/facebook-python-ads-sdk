@@ -19,6 +19,10 @@
 # DEALINGS IN THE SOFTWARE.
 
 from facebookads.adobjects.abstractobject import AbstractObject
+from facebookads.adobjects.abstractcrudobject import AbstractCrudObject
+from facebookads.adobjects.objectparser import ObjectParser
+from facebookads.api import FacebookRequest
+from facebookads.typechecker import TypeChecker
 
 """
 This class is auto-generated.
@@ -28,38 +32,27 @@ github and we'll fix in our codegen framework. We'll not be able to accept
 pull request for this class.
 """
 
-class TargetingGeoLocation(
-    AbstractObject,
+class LeadGenQualifier(
+    AbstractCrudObject,
 ):
 
-    def __init__(self, api=None):
-        super(TargetingGeoLocation, self).__init__()
-        self._isTargetingGeoLocation = True
-        self._api = api
+    def __init__(self, fbid=None, parent_id=None, api=None):
+        self._isLeadGenQualifier = True
+        super(LeadGenQualifier, self).__init__(fbid, parent_id, api)
 
     class Field(AbstractObject.Field):
-        cities = 'cities'
-        countries = 'countries'
-        country_groups = 'country_groups'
-        custom_locations = 'custom_locations'
-        electoral_districts = 'electoral_districts'
-        geo_markets = 'geo_markets'
-        location_types = 'location_types'
-        places = 'places'
-        regions = 'regions'
-        zips = 'zips'
+        category = 'category'
+        field_key = 'field_key'
+        id = 'id'
+        label = 'label'
+        question = 'question'
 
     _field_types = {
-        'cities': 'list<TargetingGeoLocationCity>',
-        'countries': 'list<string>',
-        'country_groups': 'list<string>',
-        'custom_locations': 'list<TargetingGeoLocationCustomLocation>',
-        'electoral_districts': 'list<TargetingGeoLocationElectoralDistrict>',
-        'geo_markets': 'list<TargetingGeoLocationMarket>',
-        'location_types': 'list<string>',
-        'places': 'list<TargetingGeoLocationPlace>',
-        'regions': 'list<TargetingGeoLocationRegion>',
-        'zips': 'list<TargetingGeoLocationZip>',
+        'category': 'string',
+        'field_key': 'string',
+        'id': 'string',
+        'label': 'string',
+        'question': 'string',
     }
 
     @classmethod

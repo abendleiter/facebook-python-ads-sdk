@@ -18,12 +18,35 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from facebookads.session import FacebookSession
-from facebookads.api import FacebookAdsApi
+from facebookads.adobjects.abstractobject import AbstractObject
 
-__version__ = '2.7.1.1'
-__all__ = [
-    'session',
-    'objects',
-    'api',
-]
+"""
+This class is auto-generated.
+
+For any issues or feature requests related to this class, please let us know on
+github and we'll fix in our codegen framework. We'll not be able to accept
+pull request for this class.
+"""
+
+class UserLeadGenDisclaimerResponse(
+    AbstractObject,
+):
+
+    def __init__(self, api=None):
+        super(UserLeadGenDisclaimerResponse, self).__init__()
+        self._isUserLeadGenDisclaimerResponse = True
+        self._api = api
+
+    class Field(AbstractObject.Field):
+        checkbox_key = 'checkbox_key'
+        is_checked = 'is_checked'
+
+    _field_types = {
+        'checkbox_key': 'string',
+        'is_checked': 'string',
+    }
+
+    @classmethod
+    def _get_field_enum_info(cls):
+        field_enum_info = {}
+        return field_enum_info

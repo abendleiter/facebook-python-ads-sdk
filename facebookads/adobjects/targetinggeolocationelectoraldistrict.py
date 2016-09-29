@@ -18,12 +18,39 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-from facebookads.session import FacebookSession
-from facebookads.api import FacebookAdsApi
+from facebookads.adobjects.abstractobject import AbstractObject
 
-__version__ = '2.7.1.1'
-__all__ = [
-    'session',
-    'objects',
-    'api',
-]
+"""
+This class is auto-generated.
+
+For any issues or feature requests related to this class, please let us know on
+github and we'll fix in our codegen framework. We'll not be able to accept
+pull request for this class.
+"""
+
+class TargetingGeoLocationElectoralDistrict(
+    AbstractObject,
+):
+
+    def __init__(self, api=None):
+        super(TargetingGeoLocationElectoralDistrict, self).__init__()
+        self._isTargetingGeoLocationElectoralDistrict = True
+        self._api = api
+
+    class Field(AbstractObject.Field):
+        country = 'country'
+        electoral_district = 'electoral_district'
+        key = 'key'
+        name = 'name'
+
+    _field_types = {
+        'country': 'string',
+        'electoral_district': 'string',
+        'key': 'string',
+        'name': 'string',
+    }
+
+    @classmethod
+    def _get_field_enum_info(cls):
+        field_enum_info = {}
+        return field_enum_info
