@@ -164,8 +164,6 @@ class AdAccount(adaccount.AdAccount):
         return self.get_users(fields, params)
 
 
-class AdAccountGroup(adaccountgroup.AdAccountGroup):
-
 class AbstractCrudObject(abstractcrudobject.AbstractCrudObject):
     pass
 
@@ -388,19 +386,15 @@ class AdAccount(adaccount.AdAccount):
 
 
 class AdAccountGroup(adaccountgroup.AdAccountGroup):
-
     def get_users(self, fields=None, params=None):
         """
         Returns iterator over AdAccountGroupUser's associated with this account
         group.
         """
         return self.iterate_edge(AdAccountGroupUser, fields, params)
->>>>>>> facebook/master
 
 class CustomAudience(customaudience.CustomAudience):
     pass
-
-<<<<<<< HEAD
 
 class ConnectionObject(connectionobject.ConnectionObject):
 
@@ -413,11 +407,11 @@ class ConnectionObject(connectionobject.ConnectionObject):
 
 
 class LookalikeAudience(customaudience.CustomAudience):
-
     class Field(customaudience.CustomAudience.Field):
         class LookalikeSpec(lookalikespec.LookalikeSpec.Field):
             pass
-=======
+
+
 class AdAccountGroupAccount(AbstractObject):
 
     class Field(object):
@@ -438,8 +432,6 @@ class AdAccountGroupAccount(AbstractObject):
     def get_ad_account(self):
         """Returns an AdAccount object with the same account id."""
         return AdAccount(fbid='act_' + self[self.Field.account_id])
-
->>>>>>> facebook/master
 
 class AdAccountGroupUser(AbstractCrudObject):
 
@@ -468,14 +460,13 @@ class AdAccountGroupUser(AbstractCrudObject):
         """Returns an AdUser object with the same account id."""
         return AdUser(fbid=self[self.Field.uid])
 
-<<<<<<< HEAD
 class PartnerCategory(partnercategory.PartnerCategory):
     pass
 
 
 class RateCard(ratecard.RateCard):
     pass
-=======
+
 
 class Campaign(campaign.Campaign):
     class BuyingType(object):
@@ -513,13 +504,12 @@ class AdsPixel(adspixel.AdsPixel):
     @deprecated(replacement='unshare_pixel_from_agency')
     def unshare_pixel_agencies(self, business_id, agency_id):
         return self.unshare_pixel_from_agency(business_id, agency_id)
->>>>>>> facebook/master
 
     @deprecated(replacement='share_pixel_with_ad_account')
     def share_pixel(self, business_id, account_id):
         return self.share_pixel_with_ad_account(business_id, account_id)
 
-<<<<<<< HEAD
+
 class ReachEstimate(reachestimate.ReachEstimate):
     pass
 
@@ -544,7 +534,6 @@ class Transaction(transaction.Transaction):
 
 
 class Business(business.Business):
-=======
     @deprecated(replacement='share_pixel_with_agency')
     def share_pixel_agencies(self, business_id, agency_id):
         return self.share_pixel_with_agency(business_id, agency_id)
@@ -576,8 +565,6 @@ class VideoThumbnail(videothumbnail.VideoThumbnail):
 
 
 class GeneratePreview(AbstractObject):
->>>>>>> facebook/master
-
     class Field(object):
         ad_format = 'ad_format'
         body = 'body'
@@ -592,8 +579,6 @@ class GeneratePreview(AbstractObject):
         mobile_interstitial = 'MOBILE_INTERSTITIAL'
         right_column_standard = 'RIGHT_COLUMN_STANDARD'
 
-<<<<<<< HEAD
-=======
     @classmethod
     def get_endpoint(cls):
         return 'generatepreviews'
@@ -601,12 +586,11 @@ class GeneratePreview(AbstractObject):
     def get_html(self):
         """Returns the preview html."""
         return self[self.Field.body]
->>>>>>> facebook/master
+
 
 class ProductCatalog(productcatalog.ProductCatalog):
     pass
 
-<<<<<<< HEAD
 
 class ProductCatalogExternalEventSource(externaleventsource.ExternalEventSource):
     pass
@@ -617,6 +601,7 @@ class ProductFeed(productfeed.ProductFeed):
     class Format(object):
         tsv = 'TSV'
         xml = 'XML'
+
 
 class ProductFeedUpload(productfeedupload.ProductFeedUpload):
     pass
@@ -654,7 +639,7 @@ class ProductAudience(customaudience.CustomAudience):
         from facebookads.adobjects.adaccount import AdAccount
         return AdAccount(api=self._api, fbid=parent_id).create_product_audience(fields, params, batch, pending)
 
-=======
+
 class AdCreativePreview(GeneratePreview):
 
     @classmethod
@@ -715,11 +700,10 @@ class RateCard(ratecard.RateCard):
 
 class ReachEstimate(reachestimate.ReachEstimate):
     pass
->>>>>>> facebook/master
+
 
 class Insights(adsinsights.AdsInsights):
 
-<<<<<<< HEAD
     class Preset(adsinsights.AdsInsights.DatePreset):
         pass
 
@@ -731,7 +715,8 @@ class Insights(adsinsights.AdsInsights):
 
     class ActionAttributionWindow(adsinsights.AdsInsights.ActionAttributionWindows):
         pass
-=======
+
+
 class ReachFrequencyPrediction(reachfrequencyprediction.ReachFrequencyPrediction):
     pass
 
@@ -739,14 +724,14 @@ class ReachFrequencyPrediction(reachfrequencyprediction.ReachFrequencyPrediction
 class TargetingDescription(targetingsentenceline.TargetingSentenceLine):
     pass
 
->>>>>>> facebook/master
 
 class TargetingSearch(targetingsearch.TargetingSearch):
     pass
 
-<<<<<<< HEAD
+
 class AdLabel(adlabel.AdLabel):
     pass
+
 
 class AdsByLabels(AbstractObject):
 
@@ -774,7 +759,8 @@ class CampaignsByLabels(AbstractObject):
     @classmethod
     def get_endpoint(cls):
         return 'campaignsbylabels'
-=======
+
+
 class TargetingSpecsField(targeting.Targeting.Field):
     pass
 
@@ -822,39 +808,25 @@ class ProductFeedUploadError(productfeeduploaderror.ProductFeedUploadError):
 class ProductSet(productset.ProductSet):
     pass
 
->>>>>>> facebook/master
 
 class ProductGroup(productgroup.ProductGroup):
     pass
 
-<<<<<<< HEAD
+
 class Lead(lead.Lead):
     pass
 
 
 class LeadgenForm(leadgenform.LeadgenForm):
     pass
-=======
+
 
 class Product(productitem.ProductItem):
     class Field(productitem.ProductItem.Field):
         title = 'title'
 
->>>>>>> facebook/master
 
 class ProductAudience(customaudience.CustomAudience):
-
-<<<<<<< HEAD
-class MinimumBudget(minimumbudget.MinimumBudget):
-    pass
-
-
-class AsyncJob(adreportrun.AdReportRun):
-
-    def __init__(self, target_objects_class):
-        adreportrun.AdReportRun.__init__(self)
-        self.target_objects_class = target_objects_class
-=======
     class Field(customaudience.CustomAudience.Field):
         product_set_id = 'product_set_id'
         inclusions = 'inclusions'
@@ -868,11 +840,30 @@ class AsyncJob(adreportrun.AdReportRun):
         from facebookads.adobjects.adaccount import AdAccount
         return AdAccount(api=self._api, fbid=parent_id).create_product_audience(fields, params, batch, pending)
 
->>>>>>> facebook/master
+class MinimumBudget(minimumbudget.MinimumBudget):
+    pass
+
+
+class AsyncJob(adreportrun.AdReportRun):
+
+    def __init__(self, target_objects_class):
+        adreportrun.AdReportRun.__init__(self)
+        self.target_objects_class = target_objects_class
 
 class Insights(adsinsights.AdsInsights):
+    class Preset(adsinsights.AdsInsights.DatePreset):
+        pass
 
-<<<<<<< HEAD
+    class Breakdown(adsinsights.AdsInsights.Breakdowns):
+        pass
+
+    class ActionBreakdown(adsinsights.AdsInsights.SummaryActionBreakdowns):
+        pass
+
+    class ActionAttributionWindow(adsinsights.AdsInsights.ActionAttributionWindows):
+        pass
+
+
 class AdPlacePageSet(adplacepageset.AdPlacePageSet):
     pass
 
@@ -897,40 +888,26 @@ from facebookads.adobjects import (
 
 class OAuthAccessToken(oauthaccesstoken.OAuthAccessToken):
     pass
-=======
-    class Preset(adsinsights.AdsInsights.DatePreset):
-        pass
 
-    class Breakdown(adsinsights.AdsInsights.Breakdowns):
-        pass
-
-    class ActionBreakdown(adsinsights.AdsInsights.SummaryActionBreakdowns):
-        pass
-
-    class ActionAttributionWindow(adsinsights.AdsInsights.ActionAttributionWindows):
-        pass
-
->>>>>>> facebook/master
 
 class AdLabel(adlabel.AdLabel):
     pass
 
-<<<<<<< HEAD
+
 class Interest(interest.Interest):
     pass
 
-=======
+
 class AdsByLabels(AbstractObject):
 
     @classmethod
     def get_endpoint(cls):
         return 'adsbylabels'
->>>>>>> facebook/master
+
 
 class UserPermission(userpermission.UserPermission):
     pass
 
-<<<<<<< HEAD
 
 class PublicPage(page.Page):  # for legacy compat with fbobjs
     pass
@@ -971,7 +948,7 @@ class BusinessManager(businessmanager.BusinessManager):
 class BusinessManagerPage(page.BusinessManagerPage):
     pass
 
-=======
+
 class AdCreativesByLabels(AbstractObject):
 
     @classmethod
@@ -1018,4 +995,3 @@ class AdPlacePageSet(adplacepageset.AdPlacePageSet):
 
 class CustomConversion(customconversion.CustomConversion):
     pass
->>>>>>> facebook/master

@@ -113,10 +113,6 @@ class AdAccountGroup(
     def api_update(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
             'accounts': 'map',
-<<<<<<< HEAD
-            'id': 'string',
-=======
->>>>>>> facebook/master
             'name': 'string',
             'redownload': 'bool',
             'status': 'unsigned int',
@@ -149,10 +145,6 @@ class AdAccountGroup(
     def delete_ad_accounts(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
             'account_id': 'string',
-<<<<<<< HEAD
-            'id': 'string',
-=======
->>>>>>> facebook/master
         }
         enums = {
         }
@@ -208,10 +200,6 @@ class AdAccountGroup(
     def create_ad_account(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
             'account_ids': 'list<string>',
-<<<<<<< HEAD
-            'id': 'string',
-=======
->>>>>>> facebook/master
             'redownload': 'bool',
         }
         enums = {
@@ -240,10 +228,6 @@ class AdAccountGroup(
 
     def delete_users(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
-<<<<<<< HEAD
-            'id': 'string',
-=======
->>>>>>> facebook/master
             'redownload': 'bool',
             'uid': 'int',
         }
@@ -274,10 +258,6 @@ class AdAccountGroup(
     def create_user(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
             'account_group_roles': 'list<map>',
-<<<<<<< HEAD
-            'id': 'string',
-=======
->>>>>>> facebook/master
             'redownload': 'bool',
         }
         enums = {
