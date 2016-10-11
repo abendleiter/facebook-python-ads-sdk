@@ -102,6 +102,7 @@ class Event(
         timezone = 'timezone'
         type = 'type'
         updated_time = 'updated_time'
+        admins = 'admins'
 
     class Category:
         art_event = 'ART_EVENT'
