@@ -208,22 +208,15 @@ class FacebookBadResponseError(FacebookRequestError):
 
 class FacebookRequestSubError(FacebookRequestError):
     """ Base class for more specific facebook reqeust errors """
-    ERROR_CODE = None  # general error code of this error
-    SUBCODES = ()  # all subcodes this error should be able to fetch
-
-    @classmethod
-    def get_subcodes(cls):
-        return cls.SUBCODES
-
-    @classmethod
-    def get_error_code(cls):
-        return cls.ERROR_CODE
+    ERROR_CODES = None  # list of (errorcode, subcode). The subcode can also be `all` as a wildcard
 
     @classmethod
     def can_catch(cls, exception):
+        error_code, error_sub_code = (exception.api_error_code(), exception.api_error_subcode())
         return (
-            exception.api_error_code() == cls.get_error_code() and
-            exception.api_error_subcode() in cls.get_subcodes()
+            (error_code, error_sub_code) in cls.ERROR_CODES
+            or
+            (error_code, all) in cls.ERROR_CODES  # wildcard error codes
         )
 
 
@@ -232,11 +225,10 @@ class FacebookTransientError(FacebookRequestSubError):
     # "error_user_title": "Try Again Soon",
     # "message": "Service temporarily unavailable",
     # "error_user_msg": "Sorry, there's a temporary problem with this post. Please try again in a few moments.",
-    ERROR_CODE = 2
     SUBCODE_TRY_AGAIN_SOON = 1342001
-    SUBCODES = (
-        SUBCODE_TRY_AGAIN_SOON,
-    )
+    ERROR_CODES = [
+        (2, SUBCODE_TRY_AGAIN_SOON),
+    ]
 
     @classmethod
     def can_catch(cls, exception):
@@ -253,68 +245,59 @@ class FacebookTransientError(FacebookRequestSubError):
 class FacebookAccessTokenInvalid(FacebookRequestSubError):
     """ The Facebook request faile due to an invalid or expired access token. """
 
-    ERROR_CODE = 190  # general error code for token related errors
-
+    TOKEN_INVALID_CODE = 190  # general error code for token related errors
     SUBCODE_MALFORMED_TOKEN = None
-    SUBCODE_USER_CHECKPOINTED = 459  # user needs to login at Facebook to fix this issue
-    SUBCODE_PASSWORD_CHANGED = 460   # user changed password, so the token is no longer valid
-    SUBCODE_NO_APP_PERMISSION = 458  # user did not grand permission for this app
-    SUBCODE_TOKEN_EXPIRED = 463      # user access token expired
-    SUBCODE_UNCONFIRMED_USER = 464   # user is not a confirmed user
-    SUBCODE_SESSION_INVALID = 461    # invalid session
-    SUBCODE_INVALID_TOKEN = 467      # invalid access token
-    SUBCODE_USER_IN_BLOCKED_LOGGED_IN_CHECKPOINT = 490  # user is enrolled in a blocking checkpoint
+    SUBCODE_INVALID_TOKEN = 467  # invalid access token
 
-    SUBCODES = (SUBCODE_INVALID_TOKEN, SUBCODE_MALFORMED_TOKEN)
-
-    @classmethod
-    def get_error_code(cls):
-        return cls.ERROR_CODE
+    ERROR_CODES = [
+        (TOKEN_INVALID_CODE, SUBCODE_INVALID_TOKEN),
+        (TOKEN_INVALID_CODE, SUBCODE_MALFORMED_TOKEN),
+    ]
 
 
 class FacebookAccessTokenInvalidUserCheckpointed(FacebookAccessTokenInvalid):
-    @classmethod
-    def get_subcodes(cls):
-        return [cls.SUBCODE_USER_CHECKPOINTED]
+    SUBCODE_USER_CHECKPOINTED = 459  # user needs to login at Facebook to fix this issue
+    SUBCODE_USER_IN_BLOCKED_LOGGED_IN_CHECKPOINT = 490  # user is enrolled in a blocking checkpoint
+    ERROR_CODES = [
+        (FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_USER_CHECKPOINTED),
+        (FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_USER_IN_BLOCKED_LOGGED_IN_CHECKPOINT),
+    ]
 
 
 class FacebookAccessTokenInvalidNoAppPermission(FacebookAccessTokenInvalid):
-    @classmethod
-    def get_subcodes(cls):
-        return [cls.SUBCODE_NO_APP_PERMISSION]
+    SUBCODE_NO_APP_PERMISSION = 458  # user did not grand permission for this app
+    ERROR_CODES = [(FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_NO_APP_PERMISSION)]
 
 
 class FacebookAccessTokenInvalidTokenExpired(FacebookAccessTokenInvalid):
-    @classmethod
-    def get_subcodes(cls):
-        return [cls.SUBCODE_TOKEN_EXPIRED]
+    SUBCODE_TOKEN_EXPIRED = 463  # user access token expired
+    ERROR_CODES = [(FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_TOKEN_EXPIRED)]
 
 
 class FacebookAccessTokenInvalidUnconfirmedUser(FacebookAccessTokenInvalid):
-    @classmethod
-    def get_subcodes(cls):
-        return [cls.SUBCODE_UNCONFIRMED_USER]
+    SUBCODE_UNCONFIRMED_USER = 464  # user is not a confirmed user
+    ERROR_CODES = [(FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_UNCONFIRMED_USER)]
 
 
 class FacebookAccessTokenInvalidSessionInvalid(FacebookAccessTokenInvalid):
-    @classmethod
-    def get_subcodes(cls):
-        return [cls.SUBCODE_SESSION_INVALID]
+    SUBCODE_SESSION_INVALID = 461  # invalid session
+    ERROR_CODES = [(FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_SESSION_INVALID)]
 
 
 class FacebookAccessTokenInvalidPasswordChanged(FacebookAccessTokenInvalid):
-    @classmethod
-    def get_subcodes(cls):
-        return [cls.SUBCODE_PASSWORD_CHANGED]
+    SUBCODE_PASSWORD_CHANGED = 460  # user changed password, so the token is no longer valid
+    ERROR_CODES = [(FacebookAccessTokenInvalid.TOKEN_INVALID_CODE, SUBCODE_PASSWORD_CHANGED)]
 
 
 class FacebookBadObjectError(FacebookError):
     """Raised when a guarantee about the object validity fails."""
     pass
 
+
 class FacebookBadParameterError(FacebookError):
     """Raised when a guarantee about the parameter validity fails."""
     pass
+
 
 class FacebookUnavailablePropertyException(FacebookError):
     """Raised when an object's property or method is not available."""
@@ -334,8 +317,7 @@ class FacebookCantEditAdsetException(FacebookRequestSubError):
      "error_user_msg": "You can't edit this ad set. You can only edit active or paused ad sets." }
      }
     """
-    ERROR_CODE = 100
-    SUBCODES = [1487056]
+    ERROR_CODES = [(100, 1487056)]
 
 
 class FacebookInsufficientPermissionsForAdCreation(FacebookRequestSubError):
@@ -358,8 +340,7 @@ class FacebookInsufficientPermissionsForAdCreation(FacebookRequestSubError):
         }
       }
     """
-    ERROR_CODE = 100
-    SUBCODES = [1487202]
+    ERROR_CODES = [(100, 1487202)]
 
 
 class FacebookOopsException(FacebookRequestSubError):
@@ -380,8 +361,10 @@ class FacebookOopsException(FacebookRequestSubError):
       }
     }
     '''
-    ERROR_CODE = 100
-    SUBCODES = [1487390]
+    ERROR_CODES = [
+        (100, 1487390),
+        (2615, all),  #"(#2615) Oops, something went wrong. Please try again later",
+    ]
 
 
 class FacebookUnknownError(FacebookRequestSubError):
@@ -391,6 +374,7 @@ class FacebookUnknownError(FacebookRequestSubError):
             exception.api_error_code == 1 and
             exception.api_error_message() == 'An unknown error occurred'
         )
+
 class DocsmithSkipTestError(Exception):
     """Raised when a docsmith test is skipped."""
     def __init__(self, message):
@@ -398,6 +382,7 @@ class DocsmithSkipTestError(Exception):
 
     def get_skip_error_msg(self):
         return self._message
+
 
 class FacebookBadParameterTypeException(FacebookError):
     """Raised when a parameter or field is set with improper type."""
