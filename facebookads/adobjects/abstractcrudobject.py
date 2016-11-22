@@ -522,7 +522,8 @@ class AbstractCrudObject(AbstractObject):
         params=None,
         fetch_first_page=True,
         include_summary=True,
-        endpoint=None
+        endpoint=None,
+        maximum_results=None
     ):
         """
         Returns Cursor with argument self as source_object and
@@ -537,6 +538,7 @@ class AbstractCrudObject(AbstractObject):
             params=params,
             include_summary=include_summary,
             endpoint=endpoint,
+            maximum_results=maximum_results,
         )
         if fetch_first_page:
             cursor.load_next_page()
