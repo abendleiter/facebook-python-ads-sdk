@@ -170,6 +170,7 @@ class FacebookResponse(object):
         an appropriate debug message.
         """
         if self.is_failure():
+            FacebookBadResponseError.check_bad_response(self)
             request_error = FacebookRequestError(
                 "Call was not successful",
                 self._call,
