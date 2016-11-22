@@ -59,10 +59,12 @@ import json
 import six
 import collections
 import re
+import logging
 
 from facebookads.adobjects.objectparser import ObjectParser
 from facebookads.typechecker import TypeChecker
 
+logger = logging.getLogger(__name__)
 
 """
 api module contains classes that make http requests to Facebook's graph API.
@@ -766,7 +768,8 @@ class Cursor(object):
         api=None,
         node_id=None,
         endpoint=None,
-        object_parser=None
+        object_parser=None,
+        maximum_results=None
     ):
         """
         Initializes an cursor over the objects to which there is an edge from
@@ -788,6 +791,7 @@ class Cursor(object):
             node_id (optional): The ID of calling node.
             endpoint (optional): The edge name.
             object_parser (optional): The ObjectParser to parse response.
+            maximum_results (optional): Maximum number of result items over all pages (see AA-331)
         """
         self.params = dict(params or {})
         target_objects_class._assign_fields_to_params(fields, self.params)
@@ -808,6 +812,9 @@ class Cursor(object):
             api=self._api,
             target_class=self._target_objects_class,
         )
+        self._results_count = 0
+        self._called_paths = []
+        self._maximum_results = maximum_results
 
     def __repr__(self):
         return str(self._queue)
@@ -822,8 +829,22 @@ class Cursor(object):
         # Load next page at end.
         # If load_next_page returns False, raise StopIteration exception
         if not self._queue and not self.load_next_page():
+            logger.debug(
+                'Stopped after iterating %d objects of %s',
+                self._results_count,
+                self._target_objects_class
+            )
             raise StopIteration()
 
+        if self._maximum_results is not None and self._results_count >= self._maximum_results:
+            logger.debug(
+                'Stopped after iterating %d objects of class %s',
+                self._results_count,
+                self._target_objects_class
+            )
+            raise StopIteration()
+
+        self._results_count += 1
         return self._queue.pop(0)
 
     # Python 2 compatibility.
@@ -860,11 +881,20 @@ class Cursor(object):
         FacebookBadResponseError.check_bad_response(response_obj)
         response = response_obj.json()
 
-        if 'paging' in response and 'next' in response['paging']:
-            self._path = response['paging']['next']
-        else:
+        has_paging = 'paging' in response and 'next' in response['paging']
+        is_duplicate_page = response.get('paging', {}).get('next') in self._called_paths
+
+        if not has_paging or is_duplicate_page:
             # Indicate if this was the last page
             self._finished_iteration = True
+            if is_duplicate_page:
+                logger.warn("'next' link '%s' has been called before with params %s.\n"
+                            "Breaking the iteration at this point to avoid running into a "
+                            "loophole!" % (response.get('paging', {}).get('next'),
+                                           str(self.params)))
+        else:
+            self._path = response['paging']['next']
+            self._called_paths.append(self._path)
 
         if (
             self._include_summary and
