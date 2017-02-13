@@ -370,9 +370,15 @@ class FacebookOopsException(FacebookRequestSubError):
 class FacebookUnknownError(FacebookRequestSubError):
     @classmethod
     def can_catch(cls, exception):
+        error_message = exception.api_error_message()
         return (
-            exception.api_error_code == 1 and
-            exception.api_error_message() == 'An unknown error occurred'
+            exception.api_error_code() == 1
+            and
+            (
+                error_message == 'An unknown error occurred'
+                or
+                error_message == 'An unknown error has occurred.'
+            )
         )
 
 class DocsmithSkipTestError(Exception):
