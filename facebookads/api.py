@@ -152,6 +152,7 @@ class FacebookResponse(object):
             FacebookAccessTokenInvalidUnconfirmedUser,
             FacebookAccessTokenInvalidSessionInvalid,
             FacebookAccessTokenInvalidPasswordChanged,
+            FacebookAccessTokenInvalidUserCheckpointed,
             FacebookAccessTokenInvalid,
             FacebookTransientError,
             FacebookCantEditAdsetException,
