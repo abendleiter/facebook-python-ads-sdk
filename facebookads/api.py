@@ -43,6 +43,7 @@ from facebookads.exceptions import (
     FacebookUnknownError,
     FacebookAccessTokenInvalidNoAppPermission,
     FacebookAccessTokenInvalidTokenExpired,
+    FacebookAccessTokenInvalidUserCheckpointed,
     FacebookAccessTokenInvalidSessionInvalid, FacebookAccessTokenInvalidPasswordChanged,
     FacebookAccessTokenInvalidUnconfirmedUser)
 from facebookads.session import FacebookSession
