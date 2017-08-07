@@ -1956,6 +1956,7 @@ class AdAccount(
 
     def get_reach_estimate(self, fields=None, params=None, batch=None, pending=False):
         from facebookads.adobjects.reachestimate import ReachEstimate
+        from facebookads.adobjects.adset import AdSet
         param_types = {
             'currency': 'string',
             'daily_budget': 'float',
@@ -1965,11 +1966,12 @@ class AdAccount(
         }
         enums = {
             'optimize_for_enum': ReachEstimate.OptimizeFor.__dict__.values(),
+            'optimization_goal_enum': AdSet.OptimizationGoal.__dict__.values(),
         }
         request = FacebookRequest(
             node_id=self['id'],
             method='GET',
-            endpoint='/reachestimate',
+            endpoint='/delivery_estimate',
             api=self._api,
             param_checker=TypeChecker(param_types, enums),
             target_class=ReachEstimate,
