@@ -69,7 +69,7 @@ class AdCreative(
         object_url = 'object_url'
         platform_customizations = 'platform_customizations'
         product_set_id = 'product_set_id'
-        run_status = 'run_status'
+        status = 'status'
         template_url = 'template_url'
         thumbnail_url = 'thumbnail_url'
         title = 'title'
