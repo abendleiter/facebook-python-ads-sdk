@@ -126,11 +126,11 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractPage):
 
 
 class BusinessManagerPage(AbstractPage):
-
     class Field(AbstractPage.CommonField, AbstractPage.AdminOnlyField):
         pass
 
     def cancel_page_permission_request(self):
+        self._api._api_version = 'v2.10'
         request = FacebookRequest(
             node_id=self.get_parent_id_assured(),
             endpoint=self.get_endpoint(),
@@ -141,13 +141,16 @@ class BusinessManagerPage(AbstractPage):
         request.execute()
 
     def get_user_permissions(self, fields=None, params=None):
+        self._api._api_version = 'v2.10'
         return self.iterate_edge(UserPagePermission, fields, params)
 
     def add_user_permission(self, user_id, business_id, role):
+        self._api._api_version = 'v2.10'
         permission = UserPagePermission(parent_id=self.get_id_assured(), api=self.get_api())
         permission.remote_create(params={'user': user_id, 'business': business_id, 'role': role})
 
     def remove_user_permission(self, user_id, business_id):
+        self._api._api_version = 'v2.10'
         request = FacebookRequest(
             node_id=self.get_id_assured(),
             method='DELETE',
