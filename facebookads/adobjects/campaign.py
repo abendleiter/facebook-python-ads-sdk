@@ -58,6 +58,8 @@ class Campaign(
         recommendations = 'recommendations'
         spend_cap = 'spend_cap'
         start_time = 'start_time'
+        lifetime_budget = 'lifetime_budget'
+        budget_rebalance_flag = 'budget_rebalance_flag'
         status = 'status'
         stop_time = 'stop_time'
         updated_time = 'updated_time'
