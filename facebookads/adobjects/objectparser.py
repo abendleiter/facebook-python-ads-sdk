@@ -96,6 +96,11 @@ class ObjectParser:
             ret = []
             if isinstance(response['data'], list):
                 for json_obj in response['data']:
+                    # for adaccounts for example, only a list of ids
+                    # is given, we want to be able to parse this as
+                    # well, so in case the object is only an int.
+                    if isinstance(json_obj, int):
+                        json_obj = {'id': json_obj}
                     ret.append(self.parse_single(json_obj))
             else:
                 ret.append(self.parse_single(response['data']))

@@ -74,6 +74,7 @@ from facebookads.adobjects import (
     targetingsearch,
     clicktrackingtag,
     adreportrun,
+    post
 )
 
 import facebookads
@@ -221,6 +222,9 @@ class Campaign(campaign.Campaign):
         auction = 'AUCTION'
         fixed_price = 'FIXED_PRICE'
         reserved = 'RESERVED'
+
+class Post(post.Post):
+    pass
 
 class AdSet(adset.AdSet):
     class PacingType(object):

@@ -106,7 +106,6 @@ class AbstractPage(AbstractCrudObject):
     def get_endpoint(cls):
         return 'pages'
 
-
 class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractPage):
     class Field(AbstractPage.PublicField):
         pass
@@ -119,6 +118,10 @@ class Page(CannotCreate, CannotDelete, CannotUpdate, AbstractPage):
 
     def get_likes(self, fields=None, params=None):
         return self.iterate_edge(self.__class__, fields, params, endpoint='likes')
+
+    def get_posts(self, fields=None, params=None, maximum_results=None):
+        from facebookads.adobjects.post import Post
+        return self.iterate_edge(Post, fields, params, endpoint='posts', maximum_results=maximum_results)
 
     def get_events(self, fields=None, params=None):
         from facebookads.adobjects.event import Event

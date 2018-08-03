@@ -73,8 +73,8 @@ class FacebookUser(AbstractCrudObject, CannotDelete, CannotCreate, CannotUpdate)
         from facebookads.adobjects.event import UserEvents
         return self.iterate_edge(UserEvents, fields, params)
 
-    def get_accounts(self, fields=None, params=None):
-        return self.iterate_edge(FacebookUserAccount, fields, params)
+    def get_accounts(self, fields=None, params=None, maximum_results=None):
+        return self.iterate_edge(FacebookUserAccount, fields, params, maximum_results=maximum_results)
 
     def get_permissions(self, fields=None, params=None):
         return self.iterate_edge(UserPermission, fields, params)
