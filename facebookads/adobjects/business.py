@@ -33,6 +33,20 @@ github and we'll fix in our codegen framework. We'll not be able to accept
 pull request for this class.
 """
 
+
+class ClientPages(AbstractCrudObject):
+    class Field(object):
+        name = 'name'
+        id = 'id'
+
+    @classmethod
+    def get_endpoint(cls):
+        return 'client_pages'
+
+    def get_node_path(self):
+        return (self.get_parent_id_assured(), self.get_endpoint())
+
+
 class Business(
     BusinessMixin,
     AbstractCrudObject,
@@ -275,6 +289,11 @@ class Business(
             self.assure_call()
             return request.execute()
 
+    def get_client_pages(self, fields=None, params=None):
+        cursor = self.iterate_edge(ClientPages, fields, params)
+        return cursor
+
+
     def get_assigned_pages(self, fields=None, params=None, batch=None, pending=False):
         param_types = {
             'email': 'string',
@@ -285,7 +304,7 @@ class Business(
         request = FacebookRequest(
             node_id=self['id'],
             method='GET',
-            endpoint='/assigned_pages',
+            endpoint='/client_pages',
             api=self._api,
             param_checker=TypeChecker(param_types, enums),
             target_class=AbstractCrudObject,
@@ -444,6 +463,35 @@ class Business(
         else:
             self.assure_call()
             return request.execute()
+
+
+    def get_pending_client_pages(self, fields=None, params=None, batch=None, pending=False):
+        param_types = {
+        }
+        enums = {
+        }
+        request = FacebookRequest(
+            node_id=self['id'],
+            method='GET',
+            endpoint='/pending_client_pages',
+            api=self._api,
+            param_checker=TypeChecker(param_types, enums),
+            target_class=AbstractCrudObject,
+            api_type='EDGE',
+            response_parser=ObjectParser(target_class=AbstractCrudObject),
+        )
+        request.add_params(params)
+        request.add_fields(fields)
+
+        if batch is not None:
+            request.add_to_batch(batch)
+            return request
+        elif pending:
+            return request
+        else:
+            self.assure_call()
+            return request.execute()
+
 
     def create_event_source_group(self, fields=None, params=None, batch=None, pending=False):
         from facebookads.adobjects.eventsourcegroup import EventSourceGroup
